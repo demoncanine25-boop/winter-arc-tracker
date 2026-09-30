@@ -86,9 +86,7 @@
   WINTER ARC V4 — SINGLE FILE EDITION
   -----------------------------------
   This entire client lives in this index.html.
-  If the HTML is opened directly (file://), set:
-      localStorage.WINTER_ARC_API_BASE = "https://YOUR-BACKEND"
-  before loading the app.
+  This edition is self-contained and uses the shared room service directly.
 */
 window.WINTER_ARC_SINGLE_FILE = true;
 </script>
@@ -249,11 +247,11 @@ window.WINTER_ARC_SINGLE_FILE = true;
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                             <div class="sm:col-span-1">
-                                <label class="text-[10px] font-mono text-slate-400 block mb-1">LOG WEIGHT TODAY (KG)</label>
+                                <label for="dailyWeightInput" class="text-[10px] font-mono text-slate-400 block mb-1">LOG WEIGHT TODAY (KG)</label>
                                 <input type="number" step="0.1" id="dailyWeightInput" placeholder="e.g. 80.5" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                             </div>
                             <div class="sm:col-span-2">
-                                <label class="text-[10px] font-mono text-slate-400 block mb-1">TODAY'S JOURNAL / REFLECTION</label>
+                                <label for="dailyJournalInput" class="text-[10px] font-mono text-slate-400 block mb-1">TODAY'S JOURNAL / REFLECTION</label>
                                 <input type="text" id="dailyJournalInput" placeholder="What went well today? What failed?" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                             </div>
                         </div>
@@ -425,28 +423,28 @@ window.WINTER_ARC_SINGLE_FILE = true;
                 <div class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">Display Name</label>
+                            <label for="settingName" class="block text-xs font-mono text-slate-400 mb-1">Display Name</label>
                             <input type="text" id="settingName" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">Target Wake Time</label>
+                            <label for="settingWake" class="block text-xs font-mono text-slate-400 mb-1">Target Wake Time</label>
                             <input type="text" id="settingWake" placeholder="e.g. 5:00 AM" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">Starting Weight (kg)</label>
+                            <label for="modalStartWeight" class="block text-xs font-mono text-slate-400 mb-1">Starting Weight (kg)</label>
                             <input type="number" step="0.1" id="settingStartWeight" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">Goal Weight (kg)</label>
+                            <label for="modalGoalWeight" class="block text-xs font-mono text-slate-400 mb-1">Goal Weight (kg)</label>
                             <input type="number" step="0.1" id="settingGoalWeight" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Winter Arc Manifesto / Main Mindset Goal</label>
+                        <label for="settingManifesto" class="block text-xs font-mono text-slate-400 mb-1">Winter Arc Manifesto / Main Mindset Goal</label>
                         <textarea id="settingManifesto" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-cyan-500" placeholder="e.g. No alcohol, 5 AM wakeups, 10k steps daily..."></textarea>
                     </div>
 
@@ -497,12 +495,12 @@ window.WINTER_ARC_SINGLE_FILE = true;
             <div id="createRoomPane" class="space-y-3">
                 <p class="text-xs text-slate-400">Create a private room. You'll receive a unique Room ID to share with your squad.</p>
                 <div>
-                    <label class="block text-[10px] font-mono text-slate-400 mb-1">ROOM NAME</label>
+                    <label for="modalRoomNameInput" class="block text-[10px] font-mono text-slate-400 mb-1">ROOM NAME</label>
                     <input type="text" id="modalRoomNameInput" maxlength="40" placeholder="e.g. Alpha Squad"
                         class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-mono text-slate-400 mb-1">ROOM PASSWORD</label>
+                    <label for="modalRoomPasswordInput" class="block text-[10px] font-mono text-slate-400 mb-1">ROOM PASSWORD</label>
                     <input type="password" id="modalRoomPasswordInput" maxlength="80" placeholder="At least 4 characters"
                         class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
                 </div>
@@ -514,12 +512,12 @@ window.WINTER_ARC_SINGLE_FILE = true;
             <div id="joinRoomPane" class="space-y-3 hidden">
                 <p class="text-xs text-slate-400">Enter the Room ID and password shared by the room creator.</p>
                 <div>
-                    <label class="block text-[10px] font-mono text-slate-400 mb-1">ROOM ID</label>
+                    <label for="modalRoomIdInput" class="block text-[10px] font-mono text-slate-400 mb-1">ROOM ID</label>
                     <input type="text" id="modalRoomIdInput" maxlength="10" placeholder="ABC123"
                         class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono uppercase">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-mono text-slate-400 mb-1">ROOM PASSWORD</label>
+                    <label for="modalRoomJoinPasswordInput" class="block text-[10px] font-mono text-slate-400 mb-1">ROOM PASSWORD</label>
                     <input type="password" id="modalRoomJoinPasswordInput" maxlength="80" placeholder="Room password"
                         class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
                 </div>
@@ -546,11 +544,11 @@ window.WINTER_ARC_SINGLE_FILE = true;
             </div>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Rule Name</label>
+                    <label for="newHabitTitle" class="block text-xs font-mono text-slate-400 mb-1">Rule Name</label>
                     <input type="text" id="newHabitTitle" placeholder="e.g. Cold Shower 3 Mins or Read 20 Pages" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Category</label>
+                    <label for="newHabitCategory" class="block text-xs font-mono text-slate-400 mb-1">Category</label>
                     <select id="newHabitCategory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                         <option value="discipline">Discipline / Routine</option>
                         <option value="fitness">Fitness / Physical</option>
@@ -577,25 +575,25 @@ window.WINTER_ARC_SINGLE_FILE = true;
             </div>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Your Display Name</label>
+                    <label for="modalNameInput" class="block text-xs font-mono text-slate-400 mb-1">Your Display Name</label>
                     <input type="text" id="modalNameInput" placeholder="Enter name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Starting Weight (kg)</label>
+                        <label for="modalStartWeight" class="block text-xs font-mono text-slate-400 mb-1">Starting Weight (kg)</label>
                         <input type="number" step="0.1" id="modalStartWeight" placeholder="80" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Goal Weight (kg)</label>
+                        <label for="modalGoalWeight" class="block text-xs font-mono text-slate-400 mb-1">Goal Weight (kg)</label>
                         <input type="number" step="0.1" id="modalGoalWeight" placeholder="75" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Target Wake Up Time</label>
+                    <label for="modalWakeTime" class="block text-xs font-mono text-slate-400 mb-1">Target Wake Up Time</label>
                     <input type="text" id="modalWakeTime" placeholder="e.g. 5:00 AM" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Winter Arc Manifesto</label>
+                    <label for="modalManifesto" class="block text-xs font-mono text-slate-400 mb-1">Winter Arc Manifesto</label>
                     <input type="text" id="modalManifesto" placeholder="Your main goal or mindset..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                 </div>
             </div>
@@ -616,8 +614,7 @@ window.WINTER_ARC_SINGLE_FILE = true;
    Backend: Node.js + WebSocket + atomic JSON persistence
    ============================================================ */
 
-const API_BASE = location.origin;
-const WS_URL = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}`;
+const KV_ENDPOINT = 'https://keyvalue.immanuel.co/api/KeyVal/';
 const STORAGE_KEY = 'WINTER_ARC_V4_STATE';
 
 const CLEAN_APP_STATE = {
@@ -706,24 +703,67 @@ function uuid() {
 }
 
 async function api(path, options = {}) {
-    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
-    if (state.room.session) headers.Authorization = `Bearer ${state.room.session}`;
-    const res = await fetch(API_BASE + path, { ...options, headers });
-    let data = null;
-    try { data = await res.json(); } catch {}
-    if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
-    return data;
+    throw new Error('This single-file edition uses the shared room service directly.');
 }
 
-/* ---------- Room system ---------- */
+/* ---------- Single-file shared room system ----------
+   No local server is required. A room is identified by:
+   Room ID + password -> SHA-256 key -> shared room record.
+*/
 
-function setRoomUI(room) {
-    state.room.id = room.id;
-    state.room.name = room.name || '';
-    state.room.session = room.session || state.room.session;
-    state.room.joinedAt = state.room.joinedAt || Date.now();
-    persistLocal();
-    renderAll();
+async function roomKey(roomId, password) {
+    const raw = `${roomId.trim().toUpperCase()}:::${password}`;
+    const bytes = new TextEncoder().encode(raw);
+    const hash = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(hash))
+        .map(b => b.toString(16).padStart(2, '0')).join('')
+        .slice(0, 32);
+}
+
+function randomRoomId() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let out = '';
+    const values = new Uint32Array(6);
+    crypto.getRandomValues(values);
+    for (let i = 0; i < 6; i++) out += chars[values[i] % chars.length];
+    return out;
+}
+
+async function readRoom(key) {
+    const res = await fetch(`${KV_ENDPOINT}GetValue/${encodeURIComponent(key)}`, { cache:'no-store' });
+    if (!res.ok) return null;
+    const raw = await res.text();
+    if (!raw || raw === 'null' || raw === '"null"') return null;
+
+    const attempts = [raw];
+    try { attempts.push(JSON.parse(raw)); } catch {}
+    for (const value of attempts) {
+        try {
+            const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+            if (parsed && typeof parsed === 'object') return parsed;
+        } catch {}
+    }
+    return null;
+}
+
+async function writeRoom(key, room) {
+    const payload = encodeURIComponent(JSON.stringify(room));
+    const res = await fetch(`${KV_ENDPOINT}ActVal/${encodeURIComponent(key)}/${payload}`, {
+        method:'GET',
+        cache:'no-store'
+    });
+    if (!res.ok) throw new Error(`Room storage error (${res.status})`);
+    return true;
+}
+
+function normaliseRoom(room, id, name) {
+    room = room && typeof room === 'object' ? room : {};
+    if (!room.members || typeof room.members !== 'object' || Array.isArray(room.members)) room.members = {};
+    if (!Array.isArray(room.feed)) room.feed = [];
+    room.id = room.id || id;
+    room.name = room.name || name || 'Squad Room';
+    room.createdAt = room.createdAt || Date.now();
+    return room;
 }
 
 async function createRoom() {
@@ -737,30 +777,52 @@ async function createRoom() {
     if (btn) { btn.disabled = true; btn.innerText = 'Creating...'; }
 
     try {
-        const result = await api('/api/rooms', {
-            method: 'POST',
-            body: JSON.stringify({
-                name,
-                password: pass,
-                profile: buildProfilePayload()
-            })
-        });
+        let roomId = '';
+        let key = '';
+        let existing = null;
+
+        // Generate an ID and make sure this exact ID+password key is unused.
+        for (let attempt = 0; attempt < 5; attempt++) {
+            roomId = randomRoomId();
+            key = await roomKey(roomId, pass);
+            existing = await readRoom(key);
+            if (!existing) break;
+        }
+        if (existing) throw new Error('Could not generate a free Room ID. Please try again.');
+
+        const room = normaliseRoom({
+            id: roomId,
+            name,
+            members:{},
+            feed:[],
+            createdAt:Date.now()
+        }, roomId, name);
+
+        const me = buildProfilePayload();
+        room.members[state.profile.id] = me;
+        await writeRoom(key, room);
 
         state.room = {
-            id: result.room.id,
-            name: result.room.name,
-            session: result.session,
+            id: roomId,
+            name,
+            // In this single-file edition the session is the derived room key.
+            session: key,
             joinedAt: Date.now()
         };
-        state.squadMembers = result.room.members || [];
-        state.feed = result.room.feed || [];
+        state.squadMembers = Object.values(room.members);
+        state.feed = room.feed;
         persistLocal();
         closeRoomModal();
         renderAll();
-        connectWebSocket();
-        showToast(`Room created — ID: ${result.room.id}`);
+        updateSyncUI(true, 'Synced');
+        showToast(`Room created! ID: ${roomId}`);
+
+        // Put the ID in the Join field too, making it easy to reuse/share.
+        const joinId = document.getElementById('modalRoomIdInput');
+        if (joinId) joinId.value = roomId;
     } catch (e) {
-        showToast(e.message);
+        console.error('Create room failed:', e);
+        showToast(`Room creation failed: ${e.message || 'network error'}`);
     } finally {
         if (btn) { btn.disabled = false; btn.innerText = 'Create Room'; }
     }
@@ -770,37 +832,41 @@ async function joinRoom() {
     const id = document.getElementById('modalRoomIdInput').value.trim().toUpperCase();
     const pass = document.getElementById('modalRoomJoinPasswordInput').value;
 
-    if (!/^[A-Z0-9]{6,10}$/.test(id)) return showToast('Enter a valid Room ID.');
+    if (!/^[A-Z0-9]{6}$/.test(id)) return showToast('Enter the 6-character Room ID.');
     if (pass.length < 4) return showToast('Enter the room password.');
 
     const btn = document.getElementById('roomJoinBtn');
     if (btn) { btn.disabled = true; btn.innerText = 'Joining...'; }
 
     try {
-        const result = await api('/api/rooms/join', {
-            method: 'POST',
-            body: JSON.stringify({
-                roomId: id,
-                password: pass,
-                profile: buildProfilePayload()
-            })
-        });
+        const key = await roomKey(id, pass);
+        const room = await readRoom(key);
+        if (!room || !room.id) {
+            throw new Error('Room not found. Check the Room ID and password.');
+        }
+        if (room.id !== id) throw new Error('Invalid room credentials.');
+
+        normaliseRoom(room, id, room.name);
+        room.members[state.profile.id] = buildProfilePayload();
+        room.members[state.profile.id].updatedAt = Date.now();
+        await writeRoom(key, room);
 
         state.room = {
-            id: result.room.id,
-            name: result.room.name,
-            session: result.session,
+            id: room.id,
+            name: room.name,
+            session: key,
             joinedAt: Date.now()
         };
-        state.squadMembers = result.room.members || [];
-        state.feed = result.room.feed || [];
+        state.squadMembers = Object.values(room.members);
+        state.feed = room.feed || [];
         persistLocal();
         closeRoomModal();
         renderAll();
-        connectWebSocket();
-        showToast(`Joined ${result.room.name} — ${result.room.id}`);
+        updateSyncUI(true, 'Synced');
+        showToast(`Joined ${room.name} • ${room.id}`);
     } catch (e) {
-        showToast(e.message);
+        console.error('Join room failed:', e);
+        showToast(`Join failed: ${e.message || 'network error'}`);
     } finally {
         if (btn) { btn.disabled = false; btn.innerText = 'Join Room'; }
     }
@@ -808,13 +874,20 @@ async function joinRoom() {
 
 async function leaveRoom() {
     if (!state.room.session) return;
-    try { await api('/api/rooms/leave', { method:'POST' }); } catch {}
-    if (ws) { try { ws.close(); } catch {} }
+    try {
+        const room = await readRoom(state.room.session);
+        if (room?.members?.[state.profile.id]) {
+            delete room.members[state.profile.id];
+            await writeRoom(state.room.session, room);
+        }
+    } catch (e) { console.warn('Could not update room on leave:', e); }
+
     state.room = { id:'', name:'', session:'', joinedAt:0 };
     state.squadMembers = [];
     state.feed = [];
     persistLocal();
     renderAll();
+    updateSyncUI(false, 'No Room Joined');
     showToast('Left the room.');
 }
 
@@ -837,69 +910,7 @@ function buildProfilePayload() {
     };
 }
 
-/* ---------- WebSocket live sync ---------- */
-
-function connectWebSocket() {
-    if (!state.room.session) return;
-    if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
-
-    try {
-        ws = new WebSocket(`${WS_URL}/ws`);
-    } catch {
-        scheduleReconnect();
-        return;
-    }
-
-    ws.onopen = () => {
-        updateSyncUI(true, 'Live');
-        ws.send(JSON.stringify({ type:'AUTH', session: state.room.session }));
-        sendPresence();
-    };
-
-    ws.onmessage = event => {
-        try {
-            const msg = JSON.parse(event.data);
-            if (msg.type === 'ROOM_STATE') applyRoomState(msg.room);
-            if (msg.type === 'ROOM_UPDATE') applyRoomState(msg.room);
-            if (msg.type === 'PRESENCE') applyRoomState({ members: msg.members, feed: state.feed });
-            if (msg.type === 'ERROR') updateSyncUI(false, msg.message || 'Sync error');
-        } catch (e) {
-            console.error('WS message error', e);
-        }
-    };
-
-    ws.onclose = () => {
-        updateSyncUI(false, 'Reconnecting...');
-        scheduleReconnect();
-    };
-
-    ws.onerror = () => updateSyncUI(false, 'Connection error');
-}
-
-function scheduleReconnect() {
-    clearTimeout(reconnectTimer);
-    reconnectTimer = setTimeout(() => {
-        if (state.room.session) connectWebSocket();
-    }, 2500);
-}
-
-function sendPresence() {
-    if (ws?.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-            type:'PRESENCE',
-            profile: buildProfilePayload()
-        }));
-    }
-}
-
-function applyRoomState(room) {
-    if (!room) return;
-    if (Array.isArray(room.members)) state.squadMembers = room.members;
-    if (Array.isArray(room.feed)) state.feed = room.feed;
-    if (room.version) lastServerVersion = room.version;
-    renderSquadView();
-    renderFeedView();
-}
+/* ---------- Cross-device polling sync ---------- */
 
 async function syncWithRoomBackend() {
     if (!state.room.session || !state.profile.name) {
@@ -910,16 +921,35 @@ async function syncWithRoomBackend() {
     syncBusy = true;
 
     try {
-        const result = await api('/api/me/sync', {
-            method:'POST',
-            body: JSON.stringify({ profile: buildProfilePayload() })
-        });
-        applyRoomState(result.room);
-        updateSyncUI(true, ws?.readyState === WebSocket.OPEN ? 'Live' : 'Synced');
-        sendPresence();
+        const room = await readRoom(state.room.session);
+        if (!room) throw new Error('Shared room data is unavailable.');
+
+        normaliseRoom(room, state.room.id, state.room.name);
+        room.members[state.profile.id] = buildProfilePayload();
+
+        // Merge locally-created feed posts into the shared room.
+        const existing = new Set(room.feed.map(f => `${f.author}|${f.time}|${f.text}`));
+        for (const post of state.feed || []) {
+            const k = `${post.author}|${post.time}|${post.text}`;
+            if (!existing.has(k)) {
+                room.feed.unshift(post);
+                existing.add(k);
+            }
+        }
+        room.feed = room.feed.slice(0, 50);
+
+        await writeRoom(state.room.session, room);
+
+        state.squadMembers = Object.values(room.members)
+            .filter(m => Date.now() - (m.updatedAt || 0) < 14 * 24 * 60 * 60 * 1000);
+        state.feed = room.feed;
+        persistLocal();
+        renderSquadView();
+        renderFeedView();
+        updateSyncUI(true, 'Synced');
     } catch (e) {
-        console.error(e);
-        updateSyncUI(false, 'Sync error');
+        console.error('Room sync failed:', e);
+        updateSyncUI(false, 'Sync Error');
     } finally {
         syncBusy = false;
     }
@@ -1268,14 +1298,21 @@ async function createFeedPost() {
     if (!state.room.session) return showToast('Join a room first.');
 
     try {
-        const result=await api('/api/feed', {
-            method:'POST',
-            body:JSON.stringify({ text })
-        });
-        applyRoomState(result.room);
+        const post = {
+            id: uuid(),
+            author: state.profile.name || 'Anonymous',
+            authorId: state.profile.id,
+            text,
+            time: new Date().toLocaleString(),
+            createdAt: Date.now()
+        };
+        state.feed.unshift(post);
+        state.feed = state.feed.slice(0, 50);
+        persistLocal();
+        await syncWithRoomBackend();
         input.value='';
         showToast('Posted to squad feed!');
-    } catch(e) { showToast(e.message); }
+    } catch(e) { showToast(e.message || 'Could not post.'); }
 }
 
 function quickFeedTag(tag) {
@@ -1385,13 +1422,12 @@ window.addEventListener('load', async () => {
     } else if (!state.room.session) {
         openRoomModal();
     } else {
-        connectWebSocket();
         syncWithRoomBackend();
     }
 
     syncTimer=setInterval(() => {
         if (state.room.session && state.profile.name) syncWithRoomBackend();
-    }, 8000);
+    }, 3000);
 });
 </script>
 
