@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WINTER ARC // Social Discipline & Squad Tracker</title>
+    <title>WINTER ARC // Social Squad Tracker</title>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <!-- Firebase SDKs for Realtime Multi-User Sync -->
+    <!-- Firebase SDKs for Multi-User Realtime Sync -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'winter-arc-app';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
@@ -25,7 +26,7 @@
 
         window.initFirebase = async function() {
             if (!firebaseConfig) {
-                console.log("Running in local storage mode (Firebase config not detected).");
+                console.log("Running in Local Storage fallback mode.");
                 return;
             }
             try {
@@ -60,11 +61,11 @@
                 extend: {
                     colors: {
                         arc: {
-                            bg: '#090D16',
+                            bg: '#070A12',
                             card: '#0F172A',
                             border: '#1E293B',
-                            accent: '#38BDF8',
                             cyan: '#06B6D4',
+                            sky: '#38BDF8',
                             ice: '#E0F2FE'
                         }
                     },
@@ -78,33 +79,33 @@
     </script>
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap');
 
         body {
-            background-color: #090D16;
+            background-color: #070A12;
             color: #F8FAFC;
             font-family: 'Inter', sans-serif;
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(14, 165, 233, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(6, 182, 212, 0.05) 0%, transparent 40%);
+                radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
             background-attachment: fixed;
         }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #090D16; }
+        ::-webkit-scrollbar-track { background: #070A12; }
         ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: #38BDF8; }
+        ::-webkit-scrollbar-thumb:hover { background: #06B6D4; }
 
         .frosted-glass {
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(15, 23, 42, 0.75);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(56, 189, 248, 0.15);
         }
 
-        .glow-hover:hover {
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.2);
-            border-color: rgba(56, 189, 248, 0.4);
+        .glow-box:hover {
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+            border-color: rgba(56, 189, 248, 0.35);
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -117,21 +118,23 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-cyan-500/20">
-                    <i data-lucide="snowflake" class="w-6 h-6 text-slate-950"></i>
+                    <i class="fa-solid fa-snowflake text-lg text-slate-950"></i>
                 </div>
                 <div>
                     <div class="flex items-center gap-2">
                         <span class="font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-300 text-lg">WINTER ARC</span>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/30 text-cyan-400 font-bold uppercase">DISCIPLINE TRACKER</span>
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/30 text-cyan-400 font-bold uppercase">SQUAD SYNC</span>
                     </div>
                     <p class="text-[10px] text-slate-400 font-mono hidden sm:block">OCTOBER 1 — DECEMBER 31</p>
                 </div>
             </div>
 
+            <!-- Header Active Room Badge -->
             <div class="flex items-center gap-2">
-                <button onclick="openShareModal()" class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 hover:border-cyan-500/50 px-3 py-1.5 rounded-xl text-xs font-mono text-cyan-300 transition-all">
-                    <i data-lucide="users" class="w-3.5 h-3.5 text-cyan-400"></i>
-                    <span>ROOM: <strong id="headerRoomCode">SOLO-ARC</strong></span>
+                <button onclick="openRoomModal()" class="flex items-center gap-2 bg-slate-900/90 border border-slate-700 hover:border-cyan-500/50 px-3 py-1.5 rounded-xl text-xs font-mono text-cyan-300 transition-all">
+                    <i class="fa-solid fa-users text-cyan-400"></i>
+                    <span>ROOM: <strong id="headerRoomName" class="text-white">Not Set</strong></span>
+                    <i class="fa-solid fa-arrow-right-arrow-left text-[10px] text-slate-500 ml-1"></i>
                 </button>
 
                 <button onclick="openProfileModal()" class="flex items-center gap-2 pl-2 border-l border-slate-800">
@@ -142,26 +145,26 @@
             </div>
         </div>
 
+        <!-- Navigation Tabs -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-2 py-2 border-t border-slate-800/40 no-scrollbar">
             <button onclick="switchTab('daily')" id="tab-daily" class="nav-tab active-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                <i data-lucide="check-square" class="w-4 h-4"></i> Daily Arc
+                <i class="fa-solid fa-square-check"></i> Daily Arc
             </button>
             <button onclick="switchTab('squad')" id="tab-squad" class="nav-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-all">
-                <i data-lucide="trophy" class="w-4 h-4"></i> Squad & Leaderboard
+                <i class="fa-solid fa-trophy"></i> Squad Leaderboard
             </button>
             <button onclick="switchTab('feed')" id="tab-feed" class="nav-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-all">
-                <i data-lucide="activity" class="w-4 h-4"></i> Activity Feed
+                <i class="fa-solid fa-bolt"></i> Activity Feed
             </button>
             <button onclick="switchTab('profile')" id="tab-profile" class="nav-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-all">
-                <i data-lucide="user" class="w-4 h-4"></i> Profile & Rules
+                <i class="fa-solid fa-user-gear"></i> Profile & Room Settings
             </button>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex-1 w-full">
 
-        <!-- User Summary Banner -->
-        <section class="mb-6 rounded-2xl p-6 frosted-glass relative overflow-hidden glow-hover transition-all">
+        <section class="mb-6 rounded-2xl p-6 frosted-glass relative overflow-hidden glow-box transition-all">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div class="flex items-center gap-4">
                     <div id="bannerAvatarBox" class="w-16 h-16 rounded-2xl bg-slate-800 border-2 border-cyan-400 flex items-center justify-center text-2xl font-bold text-cyan-300 shadow-lg shadow-cyan-500/20">
@@ -170,11 +173,11 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h1 id="bannerUserName" class="text-xl font-black text-slate-100">Set Up Profile</h1>
-                            <button onclick="openProfileModal()" class="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-mono">
-                                <i data-lucide="edit-2" class="w-3 h-3"></i> Edit
+                            <button onclick="openProfileModal()" class="text-xs text-cyan-400 hover:underline font-mono ml-2">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
                             </button>
                         </div>
-                        <p id="bannerManifesto" class="text-xs text-slate-400 italic mt-1 font-mono">"Click edit to set your Winter Arc Manifesto..."</p>
+                        <p id="bannerManifesto" class="text-xs text-slate-400 italic mt-1 font-mono">"No manifesto set yet. Lock in your mindset..."</p>
                         <div class="flex items-center gap-4 mt-2 text-[11px] font-mono text-slate-400">
                             <span>WAKE: <strong id="bannerWakeTime" class="text-cyan-300">--:--</strong></span>
                             <span>WEIGHT: <strong id="bannerCurrentWeight" class="text-cyan-300">-- kg</strong> (Target: <span id="bannerTargetWeight" class="text-emerald-400">-- kg</span>)</span>
@@ -185,30 +188,30 @@
                 <!-- Live Metrics Pills -->
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
-                        <span class="text-[10px] text-slate-400 font-mono block">CURRENT STREAK</span>
-                        <div class="flex items-center justify-center gap-1 text-amber-400 font-black text-lg mt-0.5">
-                            <i data-lucide="flame" class="w-4 h-4 fill-amber-400"></i>
+                        <span class="text-[10px] text-slate-400 font-mono block">STREAK</span>
+                        <div class="flex items-center justify-center gap-1.5 text-amber-400 font-black text-lg mt-0.5">
+                            <i class="fa-solid fa-fire"></i>
                             <span id="statStreak">0 Days</span>
                         </div>
                     </div>
                     <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
-                        <span class="text-[10px] text-slate-400 font-mono block">TODAY'S PROGRESS</span>
-                        <div class="flex items-center justify-center gap-1 text-sky-400 font-black text-lg mt-0.5">
-                            <i data-lucide="target" class="w-4 h-4"></i>
+                        <span class="text-[10px] text-slate-400 font-mono block">TODAY SCORE</span>
+                        <div class="flex items-center justify-center gap-1.5 text-sky-400 font-black text-lg mt-0.5">
+                            <i class="fa-solid fa-bullseye"></i>
                             <span id="statTodayScore">0%</span>
                         </div>
                     </div>
                     <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
                         <span class="text-[10px] text-slate-400 font-mono block">CONSISTENCY</span>
-                        <div class="flex items-center justify-center gap-1 text-cyan-400 font-black text-lg mt-0.5">
-                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                        <div class="flex items-center justify-center gap-1.5 text-cyan-400 font-black text-lg mt-0.5">
+                            <i class="fa-solid fa-shield-halved"></i>
                             <span id="statConsistency">0.0%</span>
                         </div>
                     </div>
                     <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
                         <span class="text-[10px] text-slate-400 font-mono block">WEIGHT CHANGE</span>
-                        <div class="flex items-center justify-center gap-1 text-emerald-400 font-black text-lg mt-0.5">
-                            <i data-lucide="trending-down" class="w-4 h-4"></i>
+                        <div class="flex items-center justify-center gap-1.5 text-emerald-400 font-black text-lg mt-0.5">
+                            <i class="fa-solid fa-arrow-trend-down"></i>
                             <span id="statWeightDiff">0.0 kg</span>
                         </div>
                     </div>
@@ -225,12 +228,12 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
                             <div>
                                 <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-                                    <i data-lucide="check-circle-2" class="w-5 h-5 text-cyan-400"></i> Today's Discipline Rules
+                                    <i class="fa-solid fa-circle-check text-cyan-400"></i> Today's Discipline Rules
                                 </h2>
-                                <p class="text-xs text-slate-400 mt-0.5">Log today's completed rules (<span id="todayDateStr" class="text-cyan-300 font-mono font-bold"></span>)</p>
+                                <p class="text-xs text-slate-400 mt-0.5">Log today's completed habits (<span id="todayDateStr" class="text-cyan-300 font-mono font-bold"></span>)</p>
                             </div>
                             <button onclick="openAddHabitModal()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-cyan-500/20">
-                                <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Custom Rule
+                                <i class="fa-solid fa-circle-plus"></i> Add Custom Rule
                             </button>
                         </div>
 
@@ -239,17 +242,17 @@
                             <!-- Populated dynamically -->
                         </div>
 
-                        <!-- Template Quick-Add Buttons if habits are empty -->
+                        <!-- Quick Template Preset Buttons -->
                         <div id="templateSection" class="mt-6 p-4 rounded-xl border border-dashed border-slate-800 bg-slate-950/50 hidden">
-                            <p class="text-xs text-slate-400 font-mono mb-3">RECOMMENDED WINTER ARC TEMPLATES:</p>
+                            <p class="text-xs text-slate-400 font-mono mb-3 uppercase">RECOMMENDED WINTER ARC TEMPLATES:</p>
                             <div class="flex flex-wrap gap-2" id="templateButtons"></div>
                         </div>
                     </div>
 
-                    <!-- Daily Reflection / Note -->
+                    <!-- Daily Journal & Weight Reflection -->
                     <div class="frosted-glass rounded-2xl p-6">
-                        <h3 class="font-bold text-slate-100 text-sm mb-2 flex items-center gap-2">
-                            <i data-lucide="book-open" class="w-4 h-4 text-cyan-400"></i> Daily Reflection & Weight Log
+                        <h3 class="font-bold text-slate-100 text-sm mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-book-open text-cyan-400"></i> Daily Reflection & Weight Log
                         </h3>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                             <div class="sm:col-span-1">
@@ -257,7 +260,7 @@
                                 <input type="number" step="0.1" id="dailyWeightInput" placeholder="e.g. 80.5" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                             </div>
                             <div class="sm:col-span-2">
-                                <label class="text-[10px] font-mono text-slate-400 block mb-1">TODAY'S JOURNAL / LESSON</label>
+                                <label class="text-[10px] font-mono text-slate-400 block mb-1">TODAY'S JOURNAL / REFLECTION</label>
                                 <input type="text" id="dailyJournalInput" placeholder="What went well today? What failed?" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                             </div>
                         </div>
@@ -267,13 +270,12 @@
                     </div>
                 </div>
 
-                <!-- Side Widget: Heatmap & Calendar (1 Col) -->
+                <!-- Side Widget: 92-Day Matrix Heatmap -->
                 <div class="space-y-6">
-                    <!-- Winter Arc 92-Day Matrix Calendar -->
                     <div class="frosted-glass rounded-2xl p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-bold text-slate-100 text-sm flex items-center gap-2">
-                                <i data-lucide="calendar" class="w-4 h-4 text-cyan-400"></i> Winter Arc Heatmap
+                                <i class="fa-solid fa-calendar-days text-cyan-400"></i> Winter Arc Heatmap
                             </h3>
                             <span class="text-[10px] font-mono text-slate-400">OCT 1 - DEC 31</span>
                         </div>
@@ -284,7 +286,7 @@
                             <!-- Generated dynamically -->
                         </div>
                         <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-4 pt-3 border-t border-slate-800">
-                            <span>Missed / 0%</span>
+                            <span>0% Missed</span>
                             <div class="flex gap-1">
                                 <span class="w-2.5 h-2.5 rounded bg-slate-900 border border-slate-800"></span>
                                 <span class="w-2.5 h-2.5 rounded bg-cyan-950 border border-cyan-800"></span>
@@ -304,15 +306,13 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
                         <h2 class="text-xl font-black text-slate-100 flex items-center gap-2">
-                            <i data-lucide="users" class="w-6 h-6 text-cyan-400"></i> SQUAD LEADERBOARD
+                            <i class="fa-solid fa-users text-cyan-400"></i> SQUAD LEADERBOARD
                         </h2>
-                        <p class="text-xs text-slate-400">Real room members ranked by overall discipline consistency score.</p>
+                        <p class="text-xs text-slate-400">Real members in room: <strong class="text-cyan-300 font-mono" id="squadCurrentRoomName">Not Joined</strong></p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openShareModal()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-cyan-500/20">
-                            <i data-lucide="user-plus" class="w-4 h-4"></i> Invite Real Friends
-                        </button>
-                    </div>
+                    <button onclick="openRoomModal()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-cyan-500/20">
+                        <i class="fa-solid fa-key"></i> Room & Password Settings
+                    </button>
                 </div>
 
                 <!-- Glory & Slacking Boards -->
@@ -321,7 +321,7 @@
                     <div class="bg-emerald-950/20 border border-emerald-500/20 rounded-2xl p-4">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5 uppercase">
-                                <i data-lucide="crown" class="w-4 h-4"></i> Glory Zone (100% Today)
+                                <i class="fa-solid fa-crown text-amber-400"></i> Glory Zone (100% Today)
                             </span>
                             <span id="gloryCount" class="text-[10px] font-mono text-emerald-500">0 Members</span>
                         </div>
@@ -332,7 +332,7 @@
                     <div class="bg-rose-950/20 border border-rose-500/20 rounded-2xl p-4">
                         <div class="flex items-center justify-between mb-3">
                             <span class="text-xs font-mono font-bold text-rose-400 flex items-center gap-1.5 uppercase">
-                                <i data-lucide="alert-circle" class="w-4 h-4"></i> Slacking Zone (&lt;50% Today)
+                                <i class="fa-solid fa-circle-exclamation text-rose-400"></i> Slacking Zone (&lt;50% Today)
                             </span>
                             <span id="slackerCount" class="text-[10px] font-mono text-rose-500">0 Members</span>
                         </div>
@@ -350,7 +350,7 @@
                                 <th class="p-3 text-center">Streak</th>
                                 <th class="p-3 text-center">Today Progress</th>
                                 <th class="p-3 text-center">Consistency</th>
-                                <th class="p-3 text-center">Weight Target</th>
+                                <th class="p-3 text-center">Weight Goal</th>
                             </tr>
                         </thead>
                         <tbody id="squadLeaderboardBody" class="divide-y divide-slate-800/60 font-medium">
@@ -359,11 +359,11 @@
                     </table>
                 </div>
 
-                <!-- Clean State if alone -->
+                <!-- Empty Room Notice -->
                 <div id="emptySquadNotice" class="text-center py-8 hidden">
-                    <i data-lucide="user-x" class="w-10 h-10 text-slate-600 mx-auto mb-2"></i>
-                    <p class="text-sm text-slate-300 font-semibold">You are the only member in this room so far!</p>
-                    <p class="text-xs text-slate-500 mt-1">Share your Room Code with friends so they can enter it on their devices.</p>
+                    <i class="fa-solid fa-user-slash text-3xl text-slate-600 mb-2"></i>
+                    <p class="text-sm text-slate-300 font-semibold">You are the only member in this room!</p>
+                    <p class="text-xs text-slate-500 mt-1">Tell your friends to join using the exact Room Name and Password.</p>
                 </div>
             </div>
         </div>
@@ -378,34 +378,34 @@
                                 ?
                             </div>
                             <div class="flex-1 space-y-3">
-                                <textarea id="feedPostInput" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500" placeholder="Post a milestone or workout proof to your squad..."></textarea>
+                                <textarea id="feedPostInput" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500" placeholder="Post a milestone or workout update to your squad..."></textarea>
                                 <div class="flex items-center justify-between">
                                     <div class="flex gap-2">
-                                        <button onclick="quickFeedBadge('🧊 Cold Shower Completed')" class="text-[10px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-lg">🧊 Cold Shower</button>
-                                        <button onclick="quickFeedBadge('🔥 10k Steps Done')" class="text-[10px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded-lg">🔥 10k Steps</button>
+                                        <button onclick="quickFeedTag('🧊 Cold Shower')" class="text-[10px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg">🧊 Cold Shower</button>
+                                        <button onclick="quickFeedTag('🔥 Workout Done')" class="text-[10px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg">🔥 Workout</button>
                                     </div>
-                                    <button onclick="createFeedPost()" class="px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1">
-                                        <i data-lucide="send" class="w-3.5 h-3.5"></i> Post
+                                    <button onclick="createFeedPost()" class="px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5">
+                                        <i class="fa-solid fa-paper-plane"></i> Post
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Live Feed Container -->
+                    <!-- Live Room Posts -->
                     <div class="space-y-4" id="feedPostsContainer">
                         <!-- Rendered dynamically -->
                     </div>
                 </div>
 
-                <!-- Feed Sidebar Information -->
+                <!-- Feed Sidebar -->
                 <div class="space-y-6">
                     <div class="frosted-glass rounded-2xl p-5">
                         <h3 class="font-bold text-slate-100 text-sm mb-2 flex items-center gap-2">
-                            <i data-lucide="info" class="w-4 h-4 text-cyan-400"></i> Squad Feed Rules
+                            <i class="fa-solid fa-circle-info text-cyan-400"></i> Room Feed Info
                         </h3>
                         <p class="text-xs text-slate-400 leading-relaxed">
-                            Posts logged here are visible to all members sharing your room code (<strong class="text-cyan-300" id="feedRoomCode">SOLO-ARC</strong>). Use this feed to hold each other accountable daily.
+                            Posts in this feed are broadcast exclusively to friends connected to room <strong id="feedActiveRoomName" class="text-cyan-300">--</strong>.
                         </p>
                     </div>
                 </div>
@@ -416,9 +416,9 @@
             <div class="frosted-glass rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
                 <div class="border-b border-slate-800 pb-4">
                     <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-                        <i data-lucide="user" class="w-5 h-5 text-cyan-400"></i> Profile & Winter Arc Rules
+                        <i class="fa-solid fa-sliders text-cyan-400"></i> Profile & Room Settings
                     </h2>
-                    <p class="text-xs text-slate-400">Customize your display name, weight goals, wake time, and manifesto.</p>
+                    <p class="text-xs text-slate-400">Manage your user identity and active private room connection.</p>
                 </div>
 
                 <div class="space-y-4">
@@ -428,7 +428,7 @@
                             <input type="text" id="settingName" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                         </div>
                         <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">Target Wake Up Time</label>
+                            <label class="block text-xs font-mono text-slate-400 mb-1">Target Wake Time</label>
                             <input type="text" id="settingWake" placeholder="e.g. 5:00 AM" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                         </div>
                     </div>
@@ -445,22 +445,24 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Winter Arc Manifesto / Main Goal</label>
-                        <textarea id="settingManifesto" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-cyan-500" placeholder="e.g. No alcohol, 5 AM wakeups, 10k steps, gym 6x/week..."></textarea>
+                        <label class="block text-xs font-mono text-slate-400 mb-1">Winter Arc Manifesto / Main Mindset Goal</label>
+                        <textarea id="settingManifesto" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-cyan-500" placeholder="e.g. No alcohol, 5 AM wakeups, 10k steps daily..."></textarea>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Squad Room Code</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="settingRoomCode" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-mono uppercase focus:outline-none focus:border-cyan-500">
-                            <button onclick="changeRoomCode()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs rounded-xl">Join Room</button>
+                    <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-mono text-slate-300 font-bold">CURRENT ACTIVE ROOM</span>
+                            <span class="text-xs font-mono text-cyan-400 font-bold" id="settingCurrentRoomNameDisplay">Not Set</span>
                         </div>
+                        <button onclick="openRoomModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-bold rounded-xl flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-right-to-bracket"></i> Create or Switch Room & Password
+                        </button>
                     </div>
                 </div>
 
                 <div class="flex items-center justify-between pt-4 border-t border-slate-800">
                     <button onclick="resetAllData()" class="px-4 py-2 bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs font-semibold rounded-xl hover:bg-rose-900/40">
-                        Reset All Data
+                        Reset All Local Data
                     </button>
                     <button onclick="saveProfileSettings()" class="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/20">
                         Save Profile
@@ -472,14 +474,48 @@
     </main>
 
     
+    <!-- ROOM CREATION / JOIN MODAL (With Name & Password) -->
+    <div id="roomModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-users-gear text-cyan-400"></i> Join or Create Squad Room
+                </h3>
+                <button onclick="closeRoomModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <p class="text-xs text-slate-400 leading-relaxed">
+                Enter a custom <strong>Room Name</strong> and <strong>Password</strong>. Anyone who enters the exact same Room Name and Password will join your shared leaderboard!
+            </p>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">ROOM NAME</label>
+                    <input type="text" id="modalRoomNameInput" placeholder="e.g. Alpha Squad or Beast Mode 2026" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">ROOM PASSWORD</label>
+                    <input type="password" id="modalRoomPasswordInput" placeholder="Set room password..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeRoomModal()" class="px-4 py-2 text-xs text-slate-400">Cancel</button>
+                <button onclick="joinCustomRoom()" class="px-5 py-2 bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-cyan-400 shadow-md shadow-cyan-500/20">
+                    Connect Room
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ADD CUSTOM HABIT MODAL -->
     <div id="addHabitModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <div class="flex items-center justify-between">
                 <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <i data-lucide="plus-circle" class="w-5 h-5 text-cyan-400"></i> Add Daily Discipline Rule
+                    <i class="fa-solid fa-circle-plus text-cyan-400"></i> Add Daily Discipline Rule
                 </h3>
-                <button onclick="closeAddHabitModal()" class="text-slate-400 hover:text-slate-200"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="closeAddHabitModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="space-y-3">
                 <div>
@@ -503,65 +539,37 @@
         </div>
     </div>
 
-    <!-- SHARE ROOM MODAL -->
-    <div id="shareModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <i data-lucide="share-2" class="w-5 h-5 text-cyan-400"></i> Invite Friends to Room
-                </h3>
-                <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-200"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <p class="text-xs text-slate-400 leading-relaxed">
-                Give your room code to friends. When they enter this code in their app, you will automatically share a leaderboard!
-            </p>
-            
-            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-center">
-                <span class="text-[10px] text-slate-500 block mb-1">ROOM CODE</span>
-                <span id="modalRoomCodeText" class="text-xl font-black text-cyan-400 tracking-wider">SOLO-ARC</span>
-            </div>
-
-            <div>
-                <label class="block text-xs font-mono text-slate-400 mb-1">Direct Share Link</label>
-                <div class="flex gap-2">
-                    <input type="text" id="shareUrlInput" readonly class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 font-mono">
-                    <button onclick="copyShareUrl()" class="px-4 py-2 bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-cyan-400">Copy</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- EDIT PROFILE QUICK MODAL -->
+    <!-- PROFILE INITIAL SETUP MODAL -->
     <div id="profileModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <i data-lucide="user" class="w-5 h-5 text-cyan-400"></i> Set Up Profile
+                    <i class="fa-solid fa-user text-cyan-400"></i> Set Up Profile
                 </h3>
-                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-200"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Your Name</label>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">Your Display Name</label>
                     <input type="text" id="modalNameInput" placeholder="Enter name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Starting Wt (kg)</label>
+                        <label class="block text-xs font-mono text-slate-400 mb-1">Starting Weight (kg)</label>
                         <input type="number" step="0.1" id="modalStartWeight" placeholder="80" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Goal Wt (kg)</label>
+                        <label class="block text-xs font-mono text-slate-400 mb-1">Goal Weight (kg)</label>
                         <input type="number" step="0.1" id="modalGoalWeight" placeholder="75" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Wake Up Goal</label>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">Target Wake Up Time</label>
                     <input type="text" id="modalWakeTime" placeholder="e.g. 5:00 AM" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                 </div>
                 <div>
                     <label class="block text-xs font-mono text-slate-400 mb-1">Winter Arc Manifesto</label>
-                    <input type="text" id="modalManifesto" placeholder="Your main goal..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+                    <input type="text" id="modalManifesto" placeholder="Your main goal or mindset..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
                 </div>
             </div>
             <div class="flex justify-end gap-2 pt-2">
@@ -577,7 +585,11 @@
     <script>
         // CLEAN ZERO STATE DEFAULT
         const CLEAN_APP_STATE = {
-            roomCode: 'SOLO-ARC',
+            room: {
+                name: '',
+                password: '',
+                token: ''
+            },
             profile: {
                 id: 'u_' + Math.random().toString(36).substr(2, 9),
                 name: '',
@@ -587,7 +599,7 @@
                 goalWeight: null,
                 manifesto: ''
             },
-            habits: [], // Starts empty!
+            habits: [], // Starts clean
             history: {}, // Key: YYYY-MM-DD -> { completedHabitIds: [], journal: "", weight: null }
             feed: [],
             squadMembers: []
@@ -602,9 +614,18 @@
             { id: "tmpl_6", title: "Zero Alcohol / Zero Sugar", category: "health" }
         ];
 
-        let state = JSON.parse(localStorage.getItem('WINTER_ARC_CLEAN_STATE')) || CLEAN_APP_STATE;
+        let state = JSON.parse(localStorage.getItem('WINTER_ARC_V2_STATE')) || CLEAN_APP_STATE;
 
-        // Date helper (YYYY-MM-DD)
+        // SHA-256 Room Token Generator for Secure Database Namespacing
+        async function generateRoomToken(name, pass) {
+            if (!name || !pass) return '';
+            const raw = `${name.trim().toLowerCase()}:::${pass.trim()}`;
+            const msgBuffer = new TextEncoder().encode(raw);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 24);
+        }
+
         function getTodayStr() {
             const today = new Date();
             const y = today.getFullYear();
@@ -614,27 +635,19 @@
         }
 
         function saveLocalState() {
-            localStorage.setItem('WINTER_ARC_CLEAN_STATE', JSON.stringify(state));
+            localStorage.setItem('WINTER_ARC_V2_STATE', JSON.stringify(state));
             syncWithCloud();
         }
 
         window.onload = function() {
             if (window.initFirebase) window.initFirebase();
 
-            // Handle URL room code parameter if present
-            const urlParams = new URLSearchParams(window.location.search);
-            const roomParam = urlParams.get('room');
-            if (roomParam) {
-                state.roomCode = roomParam.toUpperCase();
-                saveLocalState();
-            }
-
             renderAll();
-            lucide.createIcons();
 
-            // Prompt profile modal on first launch if empty
             if (!state.profile.name) {
                 openProfileModal();
+            } else if (!state.room.token) {
+                openRoomModal();
             }
         };
 
@@ -642,15 +655,15 @@
             listenToSquadCloud();
         };
 
-        // Real cloud sync for multi-user squad leaderboards
+        // Real-Time Firebase Sync across devices for connected Room
         async function syncWithCloud() {
-            if (!window.db || !window.firebaseUser) return;
+            if (!window.db || !window.firebaseUser || !state.room.token) return;
 
             const userId = state.profile.id || window.firebaseUser.uid;
             const metrics = calculateMetrics();
 
             try {
-                const userDocRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'squads', state.roomCode, 'members', userId);
+                const userDocRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'rooms', state.room.token, 'members', userId);
                 await setDoc(userDocRef, {
                     profile: state.profile,
                     todayProgress: metrics.todayPercent,
@@ -664,9 +677,9 @@
         }
 
         function listenToSquadCloud() {
-            if (!window.db) return;
+            if (!window.db || !state.room.token) return;
             try {
-                const roomColRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'squads', state.roomCode, 'members');
+                const roomColRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'rooms', state.room.token, 'members');
                 onSnapshot(roomColRef, (snapshot) => {
                     const members = [];
                     snapshot.forEach((doc) => {
@@ -674,14 +687,12 @@
                     });
                     state.squadMembers = members;
                     renderSquadView();
-                    lucide.createIcons();
                 });
             } catch (e) {
                 console.error("Cloud listener error:", e);
             }
         }
 
-        // DYNAMIC METRICS & STREAK CALCULATOR
         function calculateMetrics() {
             const todayStr = getTodayStr();
             const todayHistory = state.history[todayStr] || { completedHabitIds: [] };
@@ -690,16 +701,13 @@
             const todayCompleted = todayHistory.completedHabitIds.length;
             const todayPercent = totalHabits === 0 ? 0 : Math.round((todayCompleted / totalHabits) * 100);
 
-            // Calculate streak backwards from yesterday or today
             let streak = 0;
             let checkDate = new Date();
             
-            // Check if today is 100% completed
             if (todayPercent === 100) {
                 streak++;
                 checkDate.setDate(checkDate.getDate() - 1);
             } else {
-                // Check from yesterday backwards
                 checkDate.setDate(checkDate.getDate() - 1);
             }
 
@@ -718,7 +726,6 @@
                 }
             }
 
-            // Calculate consistency over total tracked days
             const trackedDays = Object.keys(state.history).length;
             let totalPctSum = 0;
 
@@ -736,8 +743,12 @@
         function renderAll() {
             const todayStr = getTodayStr();
             document.getElementById('todayDateStr').innerText = todayStr;
-            document.getElementById('headerRoomCode').innerText = state.roomCode;
-            document.getElementById('feedRoomCode').innerText = state.roomCode;
+            
+            const roomDisplayName = state.room.name ? state.room.name : 'Not Set';
+            document.getElementById('headerRoomName').innerText = roomDisplayName;
+            document.getElementById('squadCurrentRoomName').innerText = roomDisplayName;
+            document.getElementById('feedActiveRoomName').innerText = roomDisplayName;
+            document.getElementById('settingCurrentRoomNameDisplay').innerText = roomDisplayName;
 
             const name = state.profile.name || "Set Up Profile";
             const initial = name.charAt(0).toUpperCase() || "?";
@@ -759,7 +770,6 @@
                 document.getElementById('statWeightDiff').innerText = `0.0 kg`;
             }
 
-            // Metrics
             const metrics = calculateMetrics();
             document.getElementById('statStreak').innerText = `${metrics.streak} Days`;
             document.getElementById('statTodayScore').innerText = `${metrics.todayPercent}%`;
@@ -770,7 +780,6 @@
             renderSquadView();
             renderFeedView();
             renderSettingsFields();
-            lucide.createIcons();
         }
 
         function renderDailyChecklist(todayStr) {
@@ -780,9 +789,9 @@
             if (state.habits.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-8 bg-slate-950/40 rounded-xl border border-slate-800/80">
-                        <i data-lucide="check-square" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i>
-                        <p class="text-xs text-slate-400">Your Winter Arc rule list is currently empty.</p>
-                        <p class="text-[11px] text-slate-500 mt-1">Add your first habit rule or choose a template below!</p>
+                        <i class="fa-solid fa-square-check text-3xl text-slate-600 mb-2"></i>
+                        <p class="text-xs text-slate-400">Your Winter Arc rule list is empty.</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Add custom rules or quick-add a preset template below!</p>
                     </div>
                 `;
                 document.getElementById('templateSection').classList.remove('hidden');
@@ -790,7 +799,7 @@
                 const tmplContainer = document.getElementById('templateButtons');
                 tmplContainer.innerHTML = TEMPLATE_HABITS.map(t => `
                     <button onclick="addTemplateHabit('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-cyan-500/50 text-xs text-slate-300 rounded-xl flex items-center gap-1.5 transition-colors">
-                        <i data-lucide="plus" class="w-3.5 h-3.5 text-cyan-400"></i> ${t.title}
+                        <i class="fa-solid fa-plus text-cyan-400"></i> ${t.title}
                     </button>
                 `).join('');
                 return;
@@ -803,8 +812,8 @@
                 return `
                     <div onclick="toggleHabit('${h.id}')" class="flex items-center justify-between p-4 rounded-xl border ${isDone ? 'bg-cyan-950/20 border-cyan-500/40' : 'bg-slate-900 border-slate-800'} cursor-pointer hover:border-cyan-500/50 transition-all">
                         <div class="flex items-center gap-3">
-                            <div class="w-6 h-6 rounded-lg border ${isDone ? 'bg-cyan-400 border-cyan-400 text-slate-950' : 'border-slate-600'} flex items-center justify-center">
-                                ${isDone ? '<i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>' : ''}
+                            <div class="w-6 h-6 rounded-lg border ${isDone ? 'bg-cyan-400 border-cyan-400 text-slate-950' : 'border-slate-600'} flex items-center justify-center font-black">
+                                ${isDone ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
                             </div>
                             <div>
                                 <span class="text-sm font-semibold ${isDone ? 'line-through text-slate-400' : 'text-slate-100'}">${h.title}</span>
@@ -812,7 +821,7 @@
                             </div>
                         </div>
                         <button onclick="event.stopPropagation(); deleteHabit('${h.id}')" class="text-slate-600 hover:text-rose-400 p-1">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <i class="fa-solid fa-trash-can"></i>
                         </button>
                     </div>
                 `;
@@ -826,7 +835,6 @@
             const grid = document.getElementById('arcHeatmapGrid');
             grid.innerHTML = '';
 
-            // Generate 92 days of Winter Arc (Oct 1 to Dec 31)
             const startDate = new Date(2026, 9, 1); // Oct 1
             const totalHabits = state.habits.length;
 
@@ -892,7 +900,6 @@
                 </div>
             `).join('') : `<p class="text-xs text-slate-500 italic">No slackers recorded today.</p>`;
 
-            // Sort by consistency
             const sorted = [...members].sort((a,b) => b.consistency - a.consistency);
             tableBody.innerHTML = sorted.map((m, idx) => `
                 <tr>
@@ -911,8 +918,8 @@
             if (state.feed.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-8 frosted-glass rounded-2xl">
-                        <i data-lucide="activity" class="w-8 h-8 text-slate-600 mx-auto mb-2"></i>
-                        <p class="text-xs text-slate-400">No activity feed logs posted yet in this room.</p>
+                        <i class="fa-solid fa-bolt text-3xl text-slate-600 mb-2"></i>
+                        <p class="text-xs text-slate-400">No feed logs posted yet in this room.</p>
                     </div>
                 `;
                 return;
@@ -935,10 +942,34 @@
             document.getElementById('settingStartWeight').value = state.profile.startWeight || '';
             document.getElementById('settingGoalWeight').value = state.profile.goalWeight || '';
             document.getElementById('settingManifesto').value = state.profile.manifesto || '';
-            document.getElementById('settingRoomCode').value = state.roomCode || '';
         }
 
-        // HANDLERS
+        // ROOM & DISCIPLINE ACTIONS
+        async function joinCustomRoom() {
+            const name = document.getElementById('modalRoomNameInput').value.trim();
+            const pass = document.getElementById('modalRoomPasswordInput').value.trim();
+
+            if (!name || !pass) {
+                showToast("Please enter both Room Name and Password.");
+                return;
+            }
+
+            const token = await generateRoomToken(name, pass);
+            state.room.name = name;
+            state.room.password = pass;
+            state.room.token = token;
+
+            saveLocalState();
+            closeRoomModal();
+
+            if (window.db) {
+                listenToSquadCloud();
+            }
+
+            renderAll();
+            showToast(`Connected to room: "${name}"`);
+        }
+
         function toggleHabit(habitId) {
             const todayStr = getTodayStr();
             if (!state.history[todayStr]) {
@@ -1014,6 +1045,10 @@
             saveLocalState();
             renderAll();
             showToast("Profile set up!");
+
+            if (!state.room.token) {
+                openRoomModal();
+            }
         }
 
         function saveProfileSettings() {
@@ -1025,16 +1060,7 @@
 
             saveLocalState();
             renderAll();
-            showToast("Settings updated!");
-        }
-
-        function changeRoomCode() {
-            const code = document.getElementById('settingRoomCode').value.trim().toUpperCase();
-            if (!code) return;
-            state.roomCode = code;
-            saveLocalState();
-            renderAll();
-            showToast(`Switched room to: ${code}`);
+            showToast("Profile settings saved!");
         }
 
         function createFeedPost() {
@@ -1054,7 +1080,7 @@
             showToast("Posted to squad feed!");
         }
 
-        function quickFeedBadge(tag) {
+        function quickFeedTag(tag) {
             const input = document.getElementById('feedPostInput');
             input.value = `${tag}: ${input.value}`;
         }
@@ -1079,10 +1105,10 @@
 
         function resetAllData() {
             if (confirm("Reset all streak, habits, and profile data to clean state?")) {
-                localStorage.removeItem('WINTER_ARC_CLEAN_STATE');
+                localStorage.removeItem('WINTER_ARC_V2_STATE');
                 state = JSON.parse(JSON.stringify(CLEAN_APP_STATE));
                 renderAll();
-                showToast("All data reset.");
+                showToast("All local data reset.");
             }
         }
 
@@ -1102,29 +1128,20 @@
 
         function openAddHabitModal() { document.getElementById('addHabitModal').classList.remove('hidden'); }
         function closeAddHabitModal() { document.getElementById('addHabitModal').classList.add('hidden'); }
-        function openShareModal() { 
-            document.getElementById('modalRoomCodeText').innerText = state.roomCode;
-            document.getElementById('shareUrlInput').value = `${window.location.origin}${window.location.pathname}?room=${state.roomCode}`;
-            document.getElementById('shareModal').classList.remove('hidden'); 
+        function openRoomModal() { 
+            if (state.room.name) document.getElementById('modalRoomNameInput').value = state.room.name;
+            document.getElementById('roomModal').classList.remove('hidden'); 
         }
-        function closeShareModal() { document.getElementById('shareModal').classList.add('hidden'); }
+        function closeRoomModal() { document.getElementById('roomModal').classList.add('hidden'); }
         function openProfileModal() { document.getElementById('profileModal').classList.remove('hidden'); }
         function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
-
-        function copyShareUrl() {
-            const input = document.getElementById('shareUrlInput');
-            input.select();
-            document.execCommand('copy');
-            showToast("Room link copied to clipboard!");
-        }
 
         function showToast(msg) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = 'bg-slate-900 border border-cyan-500/40 text-cyan-300 px-4 py-2.5 rounded-xl text-xs font-mono shadow-2xl flex items-center gap-2 pointer-events-auto';
-            toast.innerHTML = `<i data-lucide="info" class="w-4 h-4 text-cyan-400"></i> ${msg}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info text-cyan-400"></i> ${msg}`;
             container.appendChild(toast);
-            lucide.createIcons();
 
             setTimeout(() => toast.remove(), 3000);
         }
