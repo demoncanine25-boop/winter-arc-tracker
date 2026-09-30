@@ -12,48 +12,7 @@
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <!-- Firebase SDKs for Multi-User Realtime Sync -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'winter-arc-app';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-
-        let db = null;
-        let auth = null;
-
-        window.initFirebase = async function() {
-            if (!firebaseConfig) {
-                console.log("Running in Local Storage fallback mode.");
-                return;
-            }
-            try {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        window.firebaseUser = user;
-                        window.db = db;
-                        window.appId = appId;
-                        if (window.onFirebaseReady) window.onFirebaseReady();
-                    }
-                });
-            } catch (err) {
-                console.error("Firebase Initialization Error:", err);
-            }
-        };
-    </script>
-
+    <!-- Tailwind Configuration -->
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -86,8 +45,8 @@
             color: #F8FAFC;
             font-family: 'Inter', sans-serif;
             background-image: 
-                radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
+                radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.06) 0%, transparent 40%);
             background-attachment: fixed;
         }
 
@@ -97,7 +56,7 @@
         ::-webkit-scrollbar-thumb:hover { background: #06B6D4; }
 
         .frosted-glass {
-            background: rgba(15, 23, 42, 0.75);
+            background: rgba(15, 23, 42, 0.78);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(56, 189, 248, 0.15);
@@ -106,6 +65,16 @@
         .glow-box:hover {
             box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
             border-color: rgba(56, 189, 248, 0.35);
+        }
+
+        .pulse-live {
+            animation: pulse-green 2s infinite;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -129,8 +98,18 @@
                 </div>
             </div>
 
-            <!-- Header Active Room Badge -->
+            <!-- Live Status & Room Info -->
             <div class="flex items-center gap-2">
+                <!-- Sync Indicator Pill -->
+                <div id="syncStatusBadge" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-mono">
+                    <span id="syncDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                    <span id="syncText" class="text-slate-400">Offline</span>
+                </div>
+
+                <button onclick="forceSyncNow()" title="Sync room data now" class="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/50 rounded-xl text-cyan-400 text-xs transition-all">
+                    <i id="syncIcon" class="fa-solid fa-arrows-rotate"></i>
+                </button>
+
                 <button onclick="openRoomModal()" class="flex items-center gap-2 bg-slate-900/90 border border-slate-700 hover:border-cyan-500/50 px-3 py-1.5 rounded-xl text-xs font-mono text-cyan-300 transition-all">
                     <i class="fa-solid fa-users text-cyan-400"></i>
                     <span>ROOM: <strong id="headerRoomName" class="text-white">Not Set</strong></span>
@@ -151,19 +130,20 @@
                 <i class="fa-solid fa-square-check"></i> Daily Arc
             </button>
             <button onclick="switchTab('squad')" id="tab-squad" class="nav-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-all">
-                <i class="fa-solid fa-trophy"></i> Squad Leaderboard
+                <i class="fa-solid fa-trophy"></i> Squad Leaderboard <span id="squadBadgeCount" class="px-1.5 py-0.2 bg-cyan-950 text-cyan-300 border border-cyan-500/30 rounded-full text-[10px] font-mono">0</span>
             </button>
             <button onclick="switchTab('feed')" id="tab-feed" class="nav-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-all">
                 <i class="fa-solid fa-bolt"></i> Activity Feed
             </button>
             <button onclick="switchTab('profile')" id="tab-profile" class="nav-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-all">
-                <i class="fa-solid fa-user-gear"></i> Profile & Room Settings
+                <i class="fa-solid fa-user-gear"></i> Profile & Settings
             </button>
         </div>
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex-1 w-full">
 
+        <!-- User Profile Hero Banner -->
         <section class="mb-6 rounded-2xl p-6 frosted-glass relative overflow-hidden glow-box transition-all">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div class="flex items-center gap-4">
@@ -232,7 +212,7 @@
                                 </h2>
                                 <p class="text-xs text-slate-400 mt-0.5">Log today's completed habits (<span id="todayDateStr" class="text-cyan-300 font-mono font-bold"></span>)</p>
                             </div>
-                            <button onclick="openAddHabitModal()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-cyan-500/20">
+                            <button onclick="openAddHabitModal()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-cyan-500/20 transition-all">
                                 <i class="fa-solid fa-circle-plus"></i> Add Custom Rule
                             </button>
                         </div>
@@ -303,16 +283,23 @@
 
         <div id="view-squad" class="tab-view hidden space-y-6">
             <div class="frosted-glass rounded-2xl p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-800/80 pb-4">
                     <div>
                         <h2 class="text-xl font-black text-slate-100 flex items-center gap-2">
-                            <i class="fa-solid fa-users text-cyan-400"></i> SQUAD LEADERBOARD
+                            <i class="fa-solid fa-trophy text-cyan-400"></i> SQUAD LEADERBOARD
                         </h2>
-                        <p class="text-xs text-slate-400">Real members in room: <strong class="text-cyan-300 font-mono" id="squadCurrentRoomName">Not Joined</strong></p>
+                        <p class="text-xs text-slate-400 mt-0.5">
+                            Real-time squad members in room: <strong class="text-cyan-300 font-mono" id="squadCurrentRoomName">Not Joined</strong>
+                        </p>
                     </div>
-                    <button onclick="openRoomModal()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-cyan-500/20">
-                        <i class="fa-solid fa-key"></i> Room & Password Settings
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="forceSyncNow()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs rounded-xl flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrows-rotate"></i> Refresh Board
+                        </button>
+                        <button onclick="openRoomModal()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-cyan-500/20">
+                            <i class="fa-solid fa-key"></i> Room & Password Settings
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Glory & Slacking Boards -->
@@ -351,6 +338,7 @@
                                 <th class="p-3 text-center">Today Progress</th>
                                 <th class="p-3 text-center">Consistency</th>
                                 <th class="p-3 text-center">Weight Goal</th>
+                                <th class="p-3 text-right">Last Sync</th>
                             </tr>
                         </thead>
                         <tbody id="squadLeaderboardBody" class="divide-y divide-slate-800/60 font-medium">
@@ -362,8 +350,8 @@
                 <!-- Empty Room Notice -->
                 <div id="emptySquadNotice" class="text-center py-8 hidden">
                     <i class="fa-solid fa-user-slash text-3xl text-slate-600 mb-2"></i>
-                    <p class="text-sm text-slate-300 font-semibold">You are the only member in this room!</p>
-                    <p class="text-xs text-slate-500 mt-1">Tell your friends to join using the exact Room Name and Password.</p>
+                    <p class="text-sm text-slate-300 font-semibold">You are the only member synced in this room!</p>
+                    <p class="text-xs text-slate-500 mt-1">Tell your friends to join using the exact same Room Name and Password.</p>
                 </div>
             </div>
         </div>
@@ -474,7 +462,7 @@
     </main>
 
     
-    <!-- ROOM CREATION / JOIN MODAL (With Name & Password) -->
+    <!-- ROOM CREATION / JOIN MODAL -->
     <div id="roomModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
             <div class="flex items-center justify-between border-b border-slate-800 pb-3">
@@ -485,13 +473,13 @@
             </div>
 
             <p class="text-xs text-slate-400 leading-relaxed">
-                Enter a custom <strong>Room Name</strong> and <strong>Password</strong>. Anyone who enters the exact same Room Name and Password will join your shared leaderboard!
+                Enter a custom <strong>Room Name</strong> and <strong>Password</strong>. Anyone who enters the exact same Room Name and Password will immediately join your shared real-time leaderboard!
             </p>
 
             <div class="space-y-3">
                 <div>
                     <label class="block text-xs font-mono text-slate-400 mb-1">ROOM NAME</label>
-                    <input type="text" id="modalRoomNameInput" placeholder="e.g. Alpha Squad or Beast Mode 2026" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
+                    <input type="text" id="modalRoomNameInput" placeholder="e.g. Alpha Squad" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
                 </div>
                 <div>
                     <label class="block text-xs font-mono text-slate-400 mb-1">ROOM PASSWORD</label>
@@ -591,7 +579,7 @@
                 token: ''
             },
             profile: {
-                id: 'u_' + Math.random().toString(36).substr(2, 9),
+                id: 'u_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36),
                 name: '',
                 wakeTime: '',
                 startWeight: null,
@@ -599,7 +587,7 @@
                 goalWeight: null,
                 manifesto: ''
             },
-            habits: [], // Starts clean
+            habits: [],
             history: {}, // Key: YYYY-MM-DD -> { completedHabitIds: [], journal: "", weight: null }
             feed: [],
             squadMembers: []
@@ -614,9 +602,10 @@
             { id: "tmpl_6", title: "Zero Alcohol / Zero Sugar", category: "health" }
         ];
 
-        let state = JSON.parse(localStorage.getItem('WINTER_ARC_V2_STATE')) || CLEAN_APP_STATE;
+        let state = JSON.parse(localStorage.getItem('WINTER_ARC_V3_STATE')) || CLEAN_APP_STATE;
+        let syncTimer = null;
 
-        // SHA-256 Room Token Generator for Secure Database Namespacing
+        // Deterministic SHA-256 Room Hash Token Generator
         async function generateRoomToken(name, pass) {
             if (!name || !pass) return '';
             const raw = `${name.trim().toLowerCase()}:::${pass.trim()}`;
@@ -635,62 +624,119 @@
         }
 
         function saveLocalState() {
-            localStorage.setItem('WINTER_ARC_V2_STATE', JSON.stringify(state));
-            syncWithCloud();
+            localStorage.setItem('WINTER_ARC_V3_STATE', JSON.stringify(state));
+            syncWithRoomBackend();
         }
 
-        window.onload = function() {
-            if (window.initFirebase) window.initFirebase();
-
-            renderAll();
-
-            if (!state.profile.name) {
-                openProfileModal();
-            } else if (!state.room.token) {
-                openRoomModal();
+        // Real-Time Cross-Device Sync Backend API Engine
+        async function syncWithRoomBackend() {
+            if (!state.room.token || !state.profile.name) {
+                updateSyncUI(false, "No Room Joined");
+                return;
             }
-        };
 
-        window.onFirebaseReady = function() {
-            listenToSquadCloud();
-        };
+            const icon = document.getElementById('syncIcon');
+            if (icon) icon.classList.add('fa-spin');
 
-        // Real-Time Firebase Sync across devices for connected Room
-        async function syncWithCloud() {
-            if (!window.db || !window.firebaseUser || !state.room.token) return;
-
-            const userId = state.profile.id || window.firebaseUser.uid;
             const metrics = calculateMetrics();
+            const todayStr = getTodayStr();
+
+            const myPayload = {
+                id: state.profile.id,
+                name: state.profile.name,
+                avatar: state.profile.name.charAt(0).toUpperCase(),
+                wakeTime: state.profile.wakeTime,
+                currentWeight: state.profile.currentWeight,
+                goalWeight: state.profile.goalWeight,
+                manifesto: state.profile.manifesto,
+                todayProgress: metrics.todayPercent,
+                completedHabitsCount: metrics.todayCompleted,
+                totalHabitsCount: metrics.totalHabits,
+                streak: metrics.streak,
+                consistency: metrics.consistency,
+                lastUpdated: Date.now()
+            };
+
+            const endpoint = `https://keyvalue.immanuel.co/api/KeyVal/`;
 
             try {
-                const userDocRef = doc(window.db, 'artifacts', window.appId, 'public', 'data', 'rooms', state.room.token, 'members', userId);
-                await setDoc(userDocRef, {
-                    profile: state.profile,
-                    todayProgress: metrics.todayPercent,
-                    streak: metrics.streak,
-                    consistency: metrics.consistency,
-                    updatedAt: new Date().toISOString()
-                }, { merge: true });
-            } catch (e) {
-                console.error("Cloud push error:", e);
+                // 1. Fetch current room state
+                const getRes = await fetch(`${endpoint}GetValue/${state.room.token}`);
+                let roomData = { members: {}, feed: [] };
+
+                if (getRes.ok) {
+                    const rawText = await getRes.text();
+                    try {
+                        if (rawText && rawText !== 'null') {
+                            roomData = JSON.parse(JSON.parse(rawText)); // Unescape JSON
+                        }
+                    } catch (e) {
+                        try { roomData = JSON.parse(rawText); } catch(err){}
+                    }
+                }
+
+                if (!roomData.members) roomData.members = {};
+                if (!roomData.feed) roomData.feed = [];
+
+                // 2. Upsert current user profile
+                roomData.members[state.profile.id] = myPayload;
+
+                // 3. Merge feed posts
+                if (state.feed.length > 0) {
+                    const existingFeedTexts = new Set(roomData.feed.map(f => `${f.author}_${f.time}_${f.text}`));
+                    state.feed.forEach(post => {
+                        const key = `${post.author}_${post.time}_${post.text}`;
+                        if (!existingFeedTexts.has(key)) {
+                            roomData.feed.unshift(post);
+                        }
+                    });
+                }
+
+                // Keep only recent 30 posts
+                roomData.feed = roomData.feed.slice(0, 30);
+
+                // 4. Push updated room data back
+                await fetch(`${endpoint}ActVal/${state.room.token}/${encodeURIComponent(JSON.stringify(roomData))}`);
+
+                // 5. Convert members map to list
+                const now = Date.now();
+                const membersList = Object.values(roomData.members).filter(m => {
+                    // Filter out members inactive for > 14 days
+                    return (now - (m.lastUpdated || 0)) < (14 * 24 * 60 * 60 * 1000);
+                });
+
+                state.squadMembers = membersList;
+                state.feed = roomData.feed;
+
+                updateSyncUI(true, `Synced (${membersList.length} Online)`);
+                renderSquadView();
+                renderFeedView();
+            } catch (err) {
+                console.error("Room sync failed:", err);
+                updateSyncUI(false, "Sync Error");
+            } finally {
+                if (icon) icon.classList.remove('fa-spin');
             }
         }
 
-        function listenToSquadCloud() {
-            if (!window.db || !state.room.token) return;
-            try {
-                const roomColRef = collection(window.db, 'artifacts', window.appId, 'public', 'data', 'rooms', state.room.token, 'members');
-                onSnapshot(roomColRef, (snapshot) => {
-                    const members = [];
-                    snapshot.forEach((doc) => {
-                        members.push(doc.data());
-                    });
-                    state.squadMembers = members;
-                    renderSquadView();
-                });
-            } catch (e) {
-                console.error("Cloud listener error:", e);
+        function updateSyncUI(online, text) {
+            const badge = document.getElementById('syncStatusBadge');
+            const dot = document.getElementById('syncDot');
+            const txt = document.getElementById('syncText');
+
+            if (badge) badge.classList.remove('hidden');
+            if (dot) {
+                dot.className = online ? 'w-2 h-2 rounded-full bg-emerald-400 pulse-live' : 'w-2 h-2 rounded-full bg-rose-500';
             }
+            if (txt) {
+                txt.innerText = text;
+                txt.className = online ? 'text-emerald-400 font-bold' : 'text-slate-400';
+            }
+        }
+
+        function forceSyncNow() {
+            syncWithRoomBackend();
+            showToast("Syncing room data...");
         }
 
         function calculateMetrics() {
@@ -735,7 +781,7 @@
                 }
             });
 
-            const consistency = trackedDays === 0 ? 0 : ((totalPctSum / trackedDays) * 100).toFixed(1);
+            const consistency = trackedDays === 0 ? 0 : parseFloat(((totalPctSum / trackedDays) * 100).toFixed(1));
 
             return { todayPercent, streak, consistency, todayCompleted, totalHabits };
         }
@@ -867,12 +913,24 @@
             const tableBody = document.getElementById('squadLeaderboardBody');
             const emptyNotice = document.getElementById('emptySquadNotice');
 
-            const members = state.squadMembers.length > 0 ? state.squadMembers : [{
-                profile: state.profile,
-                todayProgress: calculateMetrics().todayPercent,
-                streak: calculateMetrics().streak,
-                consistency: calculateMetrics().consistency
-            }];
+            const metrics = calculateMetrics();
+            const selfEntry = {
+                id: state.profile.id,
+                name: state.profile.name || "You",
+                todayProgress: metrics.todayPercent,
+                streak: metrics.streak,
+                consistency: metrics.consistency,
+                goalWeight: state.profile.goalWeight,
+                lastUpdated: Date.now()
+            };
+
+            // Merge local self entry with squad list
+            const membersMap = {};
+            state.squadMembers.forEach(m => { membersMap[m.id] = m; });
+            membersMap[state.profile.id] = selfEntry;
+
+            const members = Object.values(membersMap);
+            document.getElementById('squadBadgeCount').innerText = members.length;
 
             if (members.length <= 1) {
                 emptyNotice.classList.remove('hidden');
@@ -888,34 +946,44 @@
 
             gloryList.innerHTML = glory.length ? glory.map(m => `
                 <div class="flex items-center justify-between bg-emerald-950/30 p-2 rounded-xl border border-emerald-500/20 text-xs">
-                    <span class="font-bold text-slate-200">${m.profile.name || "Anonymous"}</span>
+                    <span class="font-bold text-slate-200">${m.name || "Anonymous"}</span>
                     <span class="font-mono text-emerald-400 font-bold">100% Locked In</span>
                 </div>
             `).join('') : `<p class="text-xs text-slate-500 italic">No members at 100% today yet.</p>`;
 
             slackerList.innerHTML = slackers.length ? slackers.map(m => `
                 <div class="flex items-center justify-between bg-rose-950/30 p-2 rounded-xl border border-rose-500/20 text-xs">
-                    <span class="font-bold text-slate-200">${m.profile.name || "Anonymous"}</span>
-                    <span class="font-mono text-rose-400 font-bold">${m.todayProgress}% Completed</span>
+                    <span class="font-bold text-slate-200">${m.name || "Anonymous"}</span>
+                    <span class="font-mono text-rose-400 font-bold">${m.todayProgress || 0}% Completed</span>
                 </div>
             `).join('') : `<p class="text-xs text-slate-500 italic">No slackers recorded today.</p>`;
 
-            const sorted = [...members].sort((a,b) => b.consistency - a.consistency);
-            tableBody.innerHTML = sorted.map((m, idx) => `
-                <tr>
-                    <td class="p-3 font-mono font-bold ${idx === 0 ? 'text-amber-400' : 'text-slate-500'}">#${idx + 1}</td>
-                    <td class="p-3 font-bold text-slate-200">${m.profile.name || "Anonymous"}</td>
-                    <td class="p-3 text-center font-mono text-amber-400">${m.streak || 0}d</td>
-                    <td class="p-3 text-center font-mono text-sky-400">${m.todayProgress || 0}%</td>
-                    <td class="p-3 text-center font-mono text-cyan-400 font-bold">${m.consistency || 0}%</td>
-                    <td class="p-3 text-center font-mono text-slate-400">${m.profile.goalWeight ? `${m.profile.goalWeight} kg` : '--'}</td>
-                </tr>
-            `).join('');
+            const sorted = [...members].sort((a,b) => (b.consistency || 0) - (a.consistency || 0));
+            tableBody.innerHTML = sorted.map((m, idx) => {
+                const isMe = m.id === state.profile.id;
+                const lastSyncMin = m.lastUpdated ? Math.floor((Date.now() - m.lastUpdated) / 60000) : 0;
+                const syncStr = lastSyncMin <= 1 ? 'Just now' : `${lastSyncMin}m ago`;
+
+                return `
+                    <tr class="${isMe ? 'bg-cyan-950/30 font-bold border-l-2 border-l-cyan-400' : ''}">
+                        <td class="p-3 font-mono font-bold ${idx === 0 ? 'text-amber-400' : 'text-slate-500'}">#${idx + 1}</td>
+                        <td class="p-3 font-bold text-slate-200 flex items-center gap-2">
+                            <span>${m.name || "Anonymous"}</span>
+                            ${isMe ? '<span class="text-[9px] font-mono bg-cyan-500 text-slate-950 px-1.5 py-0.2 rounded font-black">YOU</span>' : ''}
+                        </td>
+                        <td class="p-3 text-center font-mono text-amber-400">${m.streak || 0}d</td>
+                        <td class="p-3 text-center font-mono text-sky-400">${m.todayProgress || 0}%</td>
+                        <td class="p-3 text-center font-mono text-cyan-400 font-bold">${m.consistency || 0}%</td>
+                        <td class="p-3 text-center font-mono text-slate-400">${m.goalWeight ? `${m.goalWeight} kg` : '--'}</td>
+                        <td class="p-3 text-right font-mono text-[10px] text-slate-500">${syncStr}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function renderFeedView() {
             const container = document.getElementById('feedPostsContainer');
-            if (state.feed.length === 0) {
+            if (!state.feed || state.feed.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-8 frosted-glass rounded-2xl">
                         <i class="fa-solid fa-bolt text-3xl text-slate-600 mb-2"></i>
@@ -962,12 +1030,9 @@
             saveLocalState();
             closeRoomModal();
 
-            if (window.db) {
-                listenToSquadCloud();
-            }
-
             renderAll();
-            showToast(`Connected to room: "${name}"`);
+            showToast(`Connecting to room: "${name}"...`);
+            syncWithRoomBackend();
         }
 
         function toggleHabit(habitId) {
@@ -1068,12 +1133,13 @@
             const txt = input.value.trim();
             if (!txt) return;
 
-            state.feed.unshift({
+            const newPost = {
                 author: state.profile.name || "Anonymous",
                 time: "Just now",
                 text: txt
-            });
+            };
 
+            state.feed.unshift(newPost);
             input.value = '';
             saveLocalState();
             renderAll();
@@ -1105,7 +1171,7 @@
 
         function resetAllData() {
             if (confirm("Reset all streak, habits, and profile data to clean state?")) {
-                localStorage.removeItem('WINTER_ARC_V2_STATE');
+                localStorage.removeItem('WINTER_ARC_V3_STATE');
                 state = JSON.parse(JSON.stringify(CLEAN_APP_STATE));
                 renderAll();
                 showToast("All local data reset.");
@@ -1145,6 +1211,26 @@
 
             setTimeout(() => toast.remove(), 3000);
         }
+
+        // INITIALIZATION & 3-SECOND AUTO POLLING
+        window.onload = function() {
+            renderAll();
+
+            if (!state.profile.name) {
+                openProfileModal();
+            } else if (!state.room.token) {
+                openRoomModal();
+            } else {
+                syncWithRoomBackend();
+            }
+
+            // Continuous 3-second polling interval for real-time live updates across friends
+            syncTimer = setInterval(() => {
+                if (state.room.token && state.profile.name) {
+                    syncWithRoomBackend();
+                }
+            }, 3000);
+        };
     </script>
 </body>
 </html>
