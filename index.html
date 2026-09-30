@@ -1,1236 +1,851 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WINTER ARC // Social Squad Tracker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Winter Arc — Social Discipline Tracker</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
-    <!-- Tailwind Configuration -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        arc: {
-                            bg: '#070A12',
-                            card: '#0F172A',
-                            border: '#1E293B',
-                            cyan: '#06B6D4',
-                            sky: '#38BDF8',
-                            ice: '#E0F2FE'
-                        }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['JetBrains Mono', 'monospace']
-                    }
-                }
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            arc: {
+              black: '#080c14',
+              card: '#0f172a',
+              border: '#1e293b',
+              accent: '#38bdf8',
+              glow: '#0284c7',
+              neon: '#22d3ee'
             }
+          }
         }
-    </script>
+      }
+    };
+  </script>
 
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap');
+  <!-- React & Babel CDNs -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-        body {
-            background-color: #070A12;
-            color: #F8FAFC;
-            font-family: 'Inter', sans-serif;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.12) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(56, 189, 248, 0.06) 0%, transparent 40%);
-            background-attachment: fixed;
-        }
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #070A12; }
-        ::-webkit-scrollbar-thumb { background: #1E293B; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: #06B6D4; }
+  <!-- Firebase App & Database (Official CDN for Cross-Device Global Sync) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
-        .frosted-glass {
-            background: rgba(15, 23, 42, 0.78);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(56, 189, 248, 0.15);
-        }
-
-        .glow-box:hover {
-            box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
-            border-color: rgba(56, 189, 248, 0.35);
-        }
-
-        .pulse-live {
-            animation: pulse-green 2s infinite;
-        }
-
-        @keyframes pulse-green {
-            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-            70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-        }
-
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    </style>
+  <style>
+    body {
+      background-color: #080c14;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .glow-box {
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-black pb-12">
+<body class="min-h-screen bg-arc-black text-slate-100 pb-12 selection:bg-sky-500 selection:text-white">
+  <div id="root"></div>
 
-    <header class="sticky top-0 z-40 w-full border-b border-slate-800/80 frosted-glass">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-slate-950 font-black shadow-lg shadow-cyan-500/20">
-                    <i class="fa-solid fa-snowflake text-lg text-slate-950"></i>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-300 text-lg">WINTER ARC</span>
-                        <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/30 text-cyan-400 font-bold uppercase">SQUAD SYNC</span>
-                    </div>
-                    <p class="text-[10px] text-slate-400 font-mono hidden sm:block">OCTOBER 1 — DECEMBER 31</p>
-                </div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- DEFAULT REALTIME CLOUD BACKEND FOR GLOBAL CROSS-DEVICE SYNC ---
+    // Uses Firebase public RTDB namespace (No server required, 0 CORS blocks)
+    const firebaseConfig = {
+      databaseURL: "https://winter-arc-tracker-default-rtdb.firebaseio.com"
+    };
+
+    let db = null;
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.database();
+    } catch (e) {
+      console.warn("Firebase initialization fallback active:", e);
+    }
+
+    // Default 5 Core Discipline Rules
+    const DEFAULT_HABITS = [
+      { id: 'h1', text: '5:00 AM Wake Up', completed: false },
+      { id: 'h2', text: '45 Min Workout / Gym', completed: false },
+      { id: 'h3', text: 'Read 10 Pages of Non-Fiction', completed: false },
+      { id: 'h4', text: '10,000 Daily Steps', completed: false },
+      { id: 'h5', text: 'No Sugar / Zero Alcohol', completed: false }
+    ];
+
+    function App() {
+      // Local User Profile State
+      const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('wa_user');
+        return saved ? JSON.parse(saved) : {
+          id: 'usr_' + Math.random().toString(36).substring(2, 9),
+          name: '',
+          avatar: '⚡',
+          wakeTime: '05:00',
+          currentWeight: '',
+          goalWeight: '',
+          manifesto: ''
+        };
+      });
+
+      // Active Room State
+      const [room, setRoom] = useState(() => {
+        const saved = localStorage.getItem('wa_room');
+        return saved ? JSON.parse(saved) : { name: '', pass: '', joined: false };
+      });
+
+      // Room Form Inputs
+      const [roomInputName, setRoomInputName] = useState('');
+      const [roomInputPass, setRoomInputPass] = useState('');
+
+      // Habits state for today
+      const [habits, setHabits] = useState(() => {
+        const saved = localStorage.getItem('wa_habits');
+        return saved ? JSON.parse(saved) : DEFAULT_HABITS;
+      });
+
+      // Daily completion history map: { "YYYY-MM-DD": completionPercentage }
+      const [history, setHistory] = useState(() => {
+        const saved = localStorage.getItem('wa_history');
+        return saved ? JSON.parse(saved) : {};
+      });
+
+      // Global Room State (Synced from Cloud)
+      const [roomMembers, setRoomMembers] = useState([]);
+      const [activityFeed, setActivityFeed] = useState([]);
+      const [syncStatus, setSyncStatus] = useState('Disconnected');
+      const [activeTab, setActiveTab] = useState('habits'); // 'habits', 'leaderboard', 'feed', 'profile'
+      const [newHabitText, setNewHabitText] = useState('');
+      const [newPostText, setNewPostText] = useState('');
+
+      const todayKey = new Date().toISOString().split('T')[0];
+
+      // Save user profile locally
+      useEffect(() => {
+        localStorage.setItem('wa_user', JSON.stringify(user));
+      }, [user]);
+
+      // Save habits locally
+      useEffect(() => {
+        localStorage.setItem('wa_habits', JSON.stringify(habits));
+      }, [habits]);
+
+      // Save history locally
+      useEffect(() => {
+        localStorage.setItem('wa_history', JSON.stringify(history));
+      }, [history]);
+
+      // Save room locally
+      useEffect(() => {
+        localStorage.setItem('wa_room', JSON.stringify(room));
+      }, [room]);
+
+      // Calculate streak and statistics
+      const calculateStreak = () => {
+        let streak = 0;
+        let d = new Date();
+        
+        // If completed today, count today
+        let dateStr = d.toISOString().split('T')[0];
+        if (history[dateStr] === 100) {
+          streak++;
+          d.setDate(d.getDate() - 1);
+        } else {
+          // check yesterday
+          d.setDate(d.getDate() - 1);
+        }
+
+        while (true) {
+          const checkKey = d.toISOString().split('T')[0];
+          if (history[checkKey] === 100) {
+            streak++;
+            d.setDate(d.getDate() - 1);
+          } else {
+            break;
+          }
+        }
+        return streak;
+      };
+
+      const completedCount = habits.filter(h => h.completed).length;
+      const progressPct = habits.length > 0 ? Math.round((completedCount / habits.length) * 100) : 0;
+      const currentStreak = calculateStreak();
+
+      // Update history when progress changes
+      useEffect(() => {
+        setHistory(prev => ({
+          ...prev,
+          [todayKey]: progressPct
+        }));
+      }, [progressPct]);
+
+      // --- REAL-TIME CLOUD DATABASE SYNC ENGINE ---
+      useEffect(() => {
+        if (!room.joined || !room.name || !room.pass || !db) {
+          setSyncStatus('Local Only');
+          return;
+        }
+
+        const roomHash = btoa(room.name.toLowerCase().trim() + '___' + room.pass.trim()).replace(/=/g, '');
+        const roomRef = db.ref('rooms/' + roomHash);
+
+        setSyncStatus('Connecting...');
+
+        // 1. Sync User Data to Room
+        const userPayload = {
+          id: user.id,
+          name: user.name || 'Anonymous Arc Member',
+          avatar: user.avatar || '⚡',
+          wakeTime: user.wakeTime || '',
+          currentWeight: user.currentWeight || '',
+          goalWeight: user.goalWeight || '',
+          manifesto: user.manifesto || '',
+          todayProgress: progressPct,
+          completedCount: completedCount,
+          totalHabits: habits.length,
+          streak: currentStreak,
+          lastUpdated: Date.now()
+        };
+
+        roomRef.child('members/' + user.id).set(userPayload);
+
+        // 2. Realtime Listener for Room Members & Feed
+        const listener = roomRef.on('value', (snapshot) => {
+          const val = snapshot.val();
+          if (val) {
+            // Members
+            if (val.members) {
+              const membersArray = Object.values(val.members);
+              setRoomMembers(membersArray);
+            } else {
+              setRoomMembers([]);
+            }
+
+            // Activity Feed
+            if (val.feed) {
+              const feedArray = Object.values(val.feed).sort((a, b) => b.timestamp - a.timestamp);
+              setActivityFeed(feedArray);
+            } else {
+              setActivityFeed([]);
+            }
+            setSyncStatus('Live Synced');
+          } else {
+            setRoomMembers([userPayload]);
+            setActivityFeed([]);
+            setSyncStatus('Live Synced');
+          }
+        }, (err) => {
+          console.error("Sync Error:", err);
+          setSyncStatus('Sync Error');
+        });
+
+        // Cleanup listener on unmount / room change
+        return () => {
+          roomRef.off('value', listener);
+        };
+      }, [room.joined, room.name, room.pass, user, progressPct, completedCount, habits.length, currentStreak]);
+
+      // Handle Room Joining
+      const handleJoinRoom = (e) => {
+        e.preventDefault();
+        if (!roomInputName.trim() || !roomInputPass.trim()) return;
+        setRoom({
+          name: roomInputName.trim(),
+          pass: roomInputPass.trim(),
+          joined: true
+        });
+      };
+
+      const handleLeaveRoom = () => {
+        setRoom({ name: '', pass: '', joined: false });
+      };
+
+      // Toggle Habit
+      const toggleHabit = (id) => {
+        setHabits(prev => prev.map(h => h.id === id ? { ...h, completed: !h.completed } : h));
+      };
+
+      // Add Custom Habit
+      const handleAddHabit = (e) => {
+        e.preventDefault();
+        if (!newHabitText.trim()) return;
+        setHabits(prev => [...prev, {
+          id: 'h_' + Date.now(),
+          text: newHabitText.trim(),
+          completed: false
+        }]);
+        setNewHabitText('');
+      };
+
+      // Delete Habit
+      const deleteHabit = (id) => {
+        setHabits(prev => prev.filter(h => h.id !== id));
+      };
+
+      // Post Activity Feed Update
+      const handlePostActivity = (e) => {
+        e.preventDefault();
+        if (!newPostText.trim() || !room.joined || !db) return;
+
+        const roomHash = btoa(room.name.toLowerCase().trim() + '___' + room.pass.trim()).replace(/=/g, '');
+        const postRef = db.ref('rooms/' + roomHash + '/feed').push();
+
+        postRef.set({
+          id: postRef.key,
+          userId: user.id,
+          userName: user.name || 'Anonymous',
+          userAvatar: user.avatar || '⚡',
+          content: newPostText.trim(),
+          timestamp: Date.now()
+        });
+
+        setNewPostText('');
+      };
+
+      // Icons wrapper helper using Lucide
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      });
+
+      return (
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          
+          {/* TOP HEADER */}
+          <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-arc-border mb-6">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">❄️</span>
+                <h1 className="text-2xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-indigo-400 uppercase">
+                  WINTER ARC
+                </h1>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-950 text-sky-400 border border-sky-800/50 font-semibold">
+                  OCT 1 - DEC 31
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Zero Excuses. Pure Discipline. Social Accountability.
+              </p>
             </div>
 
-            <!-- Live Status & Room Info -->
-            <div class="flex items-center gap-2">
-                <!-- Sync Indicator Pill -->
-                <div id="syncStatusBadge" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-900 border border-slate-800 text-[11px] font-mono">
-                    <span id="syncDot" class="w-2 h-2 rounded-full bg-slate-500"></span>
-                    <span id="syncText" class="text-slate-400">Offline</span>
+            {/* CLOUD SYNC BADGE */}
+            <div className="flex items-center gap-3 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+              <div className="flex items-center gap-2">
+                <span className={`w-2.5 h-2.5 rounded-full ${syncStatus === 'Live Synced' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                <span className="text-xs font-mono text-slate-300">{syncStatus}</span>
+              </div>
+              {room.joined && (
+                <div className="text-xs border-l border-slate-700 pl-3">
+                  <span className="text-slate-400">Room: </span>
+                  <span className="font-bold text-sky-400">{room.name}</span>
                 </div>
-
-                <button onclick="forceSyncNow()" title="Sync room data now" class="p-2 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/50 rounded-xl text-cyan-400 text-xs transition-all">
-                    <i id="syncIcon" class="fa-solid fa-arrows-rotate"></i>
-                </button>
-
-                <button onclick="openRoomModal()" class="flex items-center gap-2 bg-slate-900/90 border border-slate-700 hover:border-cyan-500/50 px-3 py-1.5 rounded-xl text-xs font-mono text-cyan-300 transition-all">
-                    <i class="fa-solid fa-users text-cyan-400"></i>
-                    <span>ROOM: <strong id="headerRoomName" class="text-white">Not Set</strong></span>
-                    <i class="fa-solid fa-arrow-right-arrow-left text-[10px] text-slate-500 ml-1"></i>
-                </button>
-
-                <button onclick="openProfileModal()" class="flex items-center gap-2 pl-2 border-l border-slate-800">
-                    <div id="headerAvatarBox" class="w-9 h-9 rounded-xl bg-slate-800 border border-cyan-500/30 flex items-center justify-center text-sm font-bold text-cyan-300">
-                        ?
-                    </div>
-                </button>
+              )}
             </div>
-        </div>
+          </header>
 
-        <!-- Navigation Tabs -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex overflow-x-auto gap-2 py-2 border-t border-slate-800/40 no-scrollbar">
-            <button onclick="switchTab('daily')" id="tab-daily" class="nav-tab active-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm flex items-center gap-2 whitespace-nowrap transition-all bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
-                <i class="fa-solid fa-square-check"></i> Daily Arc
-            </button>
-            <button onclick="switchTab('squad')" id="tab-squad" class="nav-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-all">
-                <i class="fa-solid fa-trophy"></i> Squad Leaderboard <span id="squadBadgeCount" class="px-1.5 py-0.2 bg-cyan-950 text-cyan-300 border border-cyan-500/30 rounded-full text-[10px] font-mono">0</span>
-            </button>
-            <button onclick="switchTab('feed')" id="tab-feed" class="nav-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-all">
-                <i class="fa-solid fa-bolt"></i> Activity Feed
-            </button>
-            <button onclick="switchTab('profile')" id="tab-profile" class="nav-tab px-4 py-2 rounded-xl font-medium text-xs sm:text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 flex items-center gap-2 whitespace-nowrap transition-all">
-                <i class="fa-solid fa-user-gear"></i> Profile & Settings
-            </button>
-        </div>
-    </header>
+          {/* SQUAD ROOM SETUP BANNER (IF NOT IN A ROOM) */}
+          {!room.joined ? (
+            <div className="mb-8 p-6 rounded-2xl bg-gradient-to-b from-slate-900 to-arc-card border border-sky-900/40 glow-box">
+              <div className="max-w-lg mx-auto text-center">
+                <h2 className="text-xl font-bold text-slate-100 mb-2">Join or Create a Private Squad Room</h2>
+                <p className="text-sm text-slate-400 mb-6">
+                  Enter a Room Name and Password. Friends typing the <span className="text-sky-400 font-semibold">exact same Room Name and Password</span> from anywhere in the world will join your live room!
+                </p>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex-1 w-full">
+                <form onSubmit={handleJoinRoom} className="space-y-4 text-left">
+                  <div>
+                    <label htmlFor="room_name_input" className="block text-xs font-medium text-slate-300 mb-1">
+                      Squad Room Name
+                    </label>
+                    <input
+                      id="room_name_input"
+                      type="text"
+                      required
+                      placeholder="e.g. AlphaSquad"
+                      value={roomInputName}
+                      onChange={(e) => setRoomInputName(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
 
-        <!-- User Profile Hero Banner -->
-        <section class="mb-6 rounded-2xl p-6 frosted-glass relative overflow-hidden glow-box transition-all">
-            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div class="flex items-center gap-4">
-                    <div id="bannerAvatarBox" class="w-16 h-16 rounded-2xl bg-slate-800 border-2 border-cyan-400 flex items-center justify-center text-2xl font-bold text-cyan-300 shadow-lg shadow-cyan-500/20">
-                        ?
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h1 id="bannerUserName" class="text-xl font-black text-slate-100">Set Up Profile</h1>
-                            <button onclick="openProfileModal()" class="text-xs text-cyan-400 hover:underline font-mono ml-2">
-                                <i class="fa-solid fa-pen-to-square"></i> Edit
-                            </button>
-                        </div>
-                        <p id="bannerManifesto" class="text-xs text-slate-400 italic mt-1 font-mono">"No manifesto set yet. Lock in your mindset..."</p>
-                        <div class="flex items-center gap-4 mt-2 text-[11px] font-mono text-slate-400">
-                            <span>WAKE: <strong id="bannerWakeTime" class="text-cyan-300">--:--</strong></span>
-                            <span>WEIGHT: <strong id="bannerCurrentWeight" class="text-cyan-300">-- kg</strong> (Target: <span id="bannerTargetWeight" class="text-emerald-400">-- kg</span>)</span>
-                        </div>
-                    </div>
-                </div>
+                  <div>
+                    <label htmlFor="room_pass_input" className="block text-xs font-medium text-slate-300 mb-1">
+                      Room Password
+                    </label>
+                    <input
+                      id="room_pass_input"
+                      type="password"
+                      required
+                      placeholder="Secret room password"
+                      value={roomInputPass}
+                      onChange={(e) => setRoomInputPass(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
 
-                <!-- Live Metrics Pills -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
-                        <span class="text-[10px] text-slate-400 font-mono block">STREAK</span>
-                        <div class="flex items-center justify-center gap-1.5 text-amber-400 font-black text-lg mt-0.5">
-                            <i class="fa-solid fa-fire"></i>
-                            <span id="statStreak">0 Days</span>
-                        </div>
-                    </div>
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
-                        <span class="text-[10px] text-slate-400 font-mono block">TODAY SCORE</span>
-                        <div class="flex items-center justify-center gap-1.5 text-sky-400 font-black text-lg mt-0.5">
-                            <i class="fa-solid fa-bullseye"></i>
-                            <span id="statTodayScore">0%</span>
-                        </div>
-                    </div>
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
-                        <span class="text-[10px] text-slate-400 font-mono block">CONSISTENCY</span>
-                        <div class="flex items-center justify-center gap-1.5 text-cyan-400 font-black text-lg mt-0.5">
-                            <i class="fa-solid fa-shield-halved"></i>
-                            <span id="statConsistency">0.0%</span>
-                        </div>
-                    </div>
-                    <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-3 text-center">
-                        <span class="text-[10px] text-slate-400 font-mono block">WEIGHT CHANGE</span>
-                        <div class="flex items-center justify-center gap-1.5 text-emerald-400 font-black text-lg mt-0.5">
-                            <i class="fa-solid fa-arrow-trend-down"></i>
-                            <span id="statWeightDiff">0.0 kg</span>
-                        </div>
-                    </div>
-                </div>
+                  <button
+                    type="submit"
+                    className="w-full py-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold rounded-xl transition duration-200 shadow-lg shadow-sky-500/20"
+                  >
+                    Enter Squad Room
+                  </button>
+                </form>
+              </div>
             </div>
-        </section>
+          ) : null}
 
-        <div id="view-daily" class="tab-view space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <!-- Main Habit Checklist (2 Cols) -->
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="frosted-glass rounded-2xl p-6">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-800 pb-4">
-                            <div>
-                                <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-                                    <i class="fa-solid fa-circle-check text-cyan-400"></i> Today's Discipline Rules
-                                </h2>
-                                <p class="text-xs text-slate-400 mt-0.5">Log today's completed habits (<span id="todayDateStr" class="text-cyan-300 font-mono font-bold"></span>)</p>
-                            </div>
-                            <button onclick="openAddHabitModal()" class="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-cyan-500/20 transition-all">
-                                <i class="fa-solid fa-circle-plus"></i> Add Custom Rule
-                            </button>
-                        </div>
-
-                        <!-- Habit Rules Checklist -->
-                        <div class="space-y-3" id="dailyHabitsContainer">
-                            <!-- Populated dynamically -->
-                        </div>
-
-                        <!-- Quick Template Preset Buttons -->
-                        <div id="templateSection" class="mt-6 p-4 rounded-xl border border-dashed border-slate-800 bg-slate-950/50 hidden">
-                            <p class="text-xs text-slate-400 font-mono mb-3 uppercase">RECOMMENDED WINTER ARC TEMPLATES:</p>
-                            <div class="flex flex-wrap gap-2" id="templateButtons"></div>
-                        </div>
-                    </div>
-
-                    <!-- Daily Journal & Weight Reflection -->
-                    <div class="frosted-glass rounded-2xl p-6">
-                        <h3 class="font-bold text-slate-100 text-sm mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-book-open text-cyan-400"></i> Daily Reflection & Weight Log
-                        </h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                            <div class="sm:col-span-1">
-                                <label class="text-[10px] font-mono text-slate-400 block mb-1">LOG WEIGHT TODAY (KG)</label>
-                                <input type="number" step="0.1" id="dailyWeightInput" placeholder="e.g. 80.5" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label class="text-[10px] font-mono text-slate-400 block mb-1">TODAY'S JOURNAL / REFLECTION</label>
-                                <input type="text" id="dailyJournalInput" placeholder="What went well today? What failed?" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                            </div>
-                        </div>
-                        <div class="flex justify-end">
-                            <button onclick="saveDailyNote()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-semibold rounded-xl">Save Daily Log</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Side Widget: 92-Day Matrix Heatmap -->
-                <div class="space-y-6">
-                    <div class="frosted-glass rounded-2xl p-6">
-                        <div class="flex items-center justify-between mb-4">
-                            <h3 class="font-bold text-slate-100 text-sm flex items-center gap-2">
-                                <i class="fa-solid fa-calendar-days text-cyan-400"></i> Winter Arc Heatmap
-                            </h3>
-                            <span class="text-[10px] font-mono text-slate-400">OCT 1 - DEC 31</span>
-                        </div>
-                        <div class="grid grid-cols-7 gap-1.5 text-center text-[9px] font-mono text-slate-500 mb-2">
-                            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
-                        </div>
-                        <div class="grid grid-cols-7 gap-1.5" id="arcHeatmapGrid">
-                            <!-- Generated dynamically -->
-                        </div>
-                        <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-4 pt-3 border-t border-slate-800">
-                            <span>0% Missed</span>
-                            <div class="flex gap-1">
-                                <span class="w-2.5 h-2.5 rounded bg-slate-900 border border-slate-800"></span>
-                                <span class="w-2.5 h-2.5 rounded bg-cyan-950 border border-cyan-800"></span>
-                                <span class="w-2.5 h-2.5 rounded bg-cyan-600"></span>
-                                <span class="w-2.5 h-2.5 rounded bg-cyan-400"></span>
-                            </div>
-                            <span>100% Locked In</span>
-                        </div>
-                    </div>
-                </div>
-
+          {/* USER QUICK SUMMARY STATS */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            <div className="bg-arc-card p-4 rounded-xl border border-arc-border">
+              <span className="text-xs text-slate-400 font-medium block">Today's Progress</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-2xl font-black text-sky-400">{progressPct}%</span>
+                <span className="text-xs text-slate-500">({completedCount}/{habits.length})</span>
+              </div>
             </div>
-        </div>
 
-        <div id="view-squad" class="tab-view hidden space-y-6">
-            <div class="frosted-glass rounded-2xl p-6">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-800/80 pb-4">
-                    <div>
-                        <h2 class="text-xl font-black text-slate-100 flex items-center gap-2">
-                            <i class="fa-solid fa-trophy text-cyan-400"></i> SQUAD LEADERBOARD
+            <div className="bg-arc-card p-4 rounded-xl border border-arc-border">
+              <span className="text-xs text-slate-400 font-medium block">Current Streak</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-2xl font-black text-amber-400">{currentStreak}</span>
+                <span className="text-xs text-slate-500">days</span>
+              </div>
+            </div>
+
+            <div className="bg-arc-card p-4 rounded-xl border border-arc-border">
+              <span className="text-xs text-slate-400 font-medium block">Current Weight</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-2xl font-black text-indigo-400">
+                  {user.currentWeight ? user.currentWeight : '--'}
+                </span>
+                <span className="text-xs text-slate-500">kg</span>
+              </div>
+            </div>
+
+            <div className="bg-arc-card p-4 rounded-xl border border-arc-border">
+              <span className="text-xs text-slate-400 font-medium block">Squad Members</span>
+              <div className="flex items-baseline gap-1 mt-1">
+                <span className="text-2xl font-black text-emerald-400">
+                  {roomMembers.length > 0 ? roomMembers.length : 1}
+                </span>
+                <span className="text-xs text-slate-500">online</span>
+              </div>
+            </div>
+          </div>
+
+          {/* NAVIGATION TABS */}
+          <div className="flex border-b border-arc-border mb-6">
+            <button
+              onClick={() => setActiveTab('habits')}
+              className={`px-5 py-3 font-semibold text-sm transition border-b-2 flex items-center gap-2 ${
+                activeTab === 'habits'
+                  ? 'border-sky-400 text-sky-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>Daily Rules</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('leaderboard')}
+              className={`px-5 py-3 font-semibold text-sm transition border-b-2 flex items-center gap-2 ${
+                activeTab === 'leaderboard'
+                  ? 'border-sky-400 text-sky-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>Squad Leaderboard</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('feed')}
+              className={`px-5 py-3 font-semibold text-sm transition border-b-2 flex items-center gap-2 ${
+                activeTab === 'feed'
+                  ? 'border-sky-400 text-sky-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>Activity Feed</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`px-5 py-3 font-semibold text-sm transition border-b-2 flex items-center gap-2 ${
+                activeTab === 'profile'
+                  ? 'border-sky-400 text-sky-400'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>Profile Settings</span>
+            </button>
+          </div>
+
+          {/* TAB 1: DAILY HABITS */}
+          {activeTab === 'habits' && (
+            <div className="space-y-6">
+              <div className="bg-arc-card p-6 rounded-2xl border border-arc-border">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-slate-100">Today's Discipline Checklist</h2>
+                  <span className="text-xs text-slate-400">{todayKey}</span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-slate-900 h-3 rounded-full overflow-hidden mb-6 border border-slate-800">
+                  <div
+                    className="bg-gradient-to-r from-sky-500 to-indigo-500 h-full transition-all duration-300"
+                    style={{ width: `${progressPct}%` }}
+                  ></div>
+                </div>
+
+                {/* Habit List */}
+                <div className="space-y-3">
+                  {habits.map((habit) => (
+                    <div
+                      key={habit.id}
+                      onClick={() => toggleHabit(habit.id)}
+                      className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition ${
+                        habit.completed
+                          ? 'bg-sky-950/30 border-sky-800/60 text-slate-200'
+                          : 'bg-slate-900/50 border-slate-800 text-slate-400 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-6 h-6 rounded-lg flex items-center justify-center border ${
+                            habit.completed
+                              ? 'bg-sky-500 border-sky-400 text-slate-950 font-bold'
+                              : 'border-slate-700'
+                          }`}
+                        >
+                          {habit.completed ? '✓' : ''}
+                        </div>
+                        <span className={`text-sm font-medium ${habit.completed ? 'line-through text-slate-300' : ''}`}>
+                          {habit.text}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteHabit(habit.id);
+                        }}
+                        className="text-xs text-slate-500 hover:text-red-400 px-2 py-1"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add Custom Habit Form */}
+                <form onSubmit={handleAddHabit} className="mt-6 flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Add custom rule (e.g., Cold Shower 3 mins)..."
+                    value={newHabitText}
+                    onChange={(e) => setNewHabitText(e.target.value)}
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                  />
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 font-semibold text-sm rounded-xl transition"
+                  >
+                    Add Rule
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2: SQUAD LEADERBOARD */}
+          {activeTab === 'leaderboard' && (
+            <div className="space-y-6">
+              {!room.joined ? (
+                <div className="p-8 text-center bg-arc-card rounded-2xl border border-arc-border">
+                  <p className="text-slate-400 mb-4">You are not currently in a room.</p>
+                  <button
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="px-6 py-2.5 bg-sky-500 text-white font-bold rounded-xl"
+                  >
+                    Join / Create Room Above
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-arc-card p-6 rounded-2xl border border-arc-border">
+                    <div className="flex items-center justify-between mb-6">
+                      <div>
+                        <h2 className="text-lg font-bold text-slate-100">
+                          Squad Leaderboard — <span className="text-sky-400">{room.name}</span>
                         </h2>
-                        <p class="text-xs text-slate-400 mt-0.5">
-                            Real-time squad members in room: <strong class="text-cyan-300 font-mono" id="squadCurrentRoomName">Not Joined</strong>
-                        </p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="forceSyncNow()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs rounded-xl flex items-center gap-1.5">
-                            <i class="fa-solid fa-arrows-rotate"></i> Refresh Board
-                        </button>
-                        <button onclick="openRoomModal()" class="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-md shadow-cyan-500/20">
-                            <i class="fa-solid fa-key"></i> Room & Password Settings
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Glory & Slacking Boards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <!-- Glory Board -->
-                    <div class="bg-emerald-950/20 border border-emerald-500/20 rounded-2xl p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-mono font-bold text-emerald-400 flex items-center gap-1.5 uppercase">
-                                <i class="fa-solid fa-crown text-amber-400"></i> Glory Zone (100% Today)
-                            </span>
-                            <span id="gloryCount" class="text-[10px] font-mono text-emerald-500">0 Members</span>
-                        </div>
-                        <div id="squadGloryList" class="space-y-2"></div>
+                        <p className="text-xs text-slate-400">Ranked by today's discipline completion rate</p>
+                      </div>
+                      <button
+                        onClick={handleLeaveRoom}
+                        className="text-xs text-red-400 border border-red-900/40 bg-red-950/20 px-3 py-1.5 rounded-lg hover:bg-red-900/30"
+                      >
+                        Change Room
+                      </button>
                     </div>
 
-                    <!-- Slacking Board -->
-                    <div class="bg-rose-950/20 border border-rose-500/20 rounded-2xl p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-mono font-bold text-rose-400 flex items-center gap-1.5 uppercase">
-                                <i class="fa-solid fa-circle-exclamation text-rose-400"></i> Slacking Zone (&lt;50% Today)
-                            </span>
-                            <span id="slackerCount" class="text-[10px] font-mono text-rose-500">0 Members</span>
-                        </div>
-                        <div id="squadSlackerList" class="space-y-2"></div>
-                    </div>
-                </div>
-
-                <!-- Squad Rankings Table -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-900/80 text-[10px] font-mono text-slate-400 uppercase border-b border-slate-800">
-                            <tr>
-                                <th class="p-3">Rank</th>
-                                <th class="p-3">Member</th>
-                                <th class="p-3 text-center">Streak</th>
-                                <th class="p-3 text-center">Today Progress</th>
-                                <th class="p-3 text-center">Consistency</th>
-                                <th class="p-3 text-center">Weight Goal</th>
-                                <th class="p-3 text-right">Last Sync</th>
-                            </tr>
-                        </thead>
-                        <tbody id="squadLeaderboardBody" class="divide-y divide-slate-800/60 font-medium">
-                            <!-- Rendered dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Empty Room Notice -->
-                <div id="emptySquadNotice" class="text-center py-8 hidden">
-                    <i class="fa-solid fa-user-slash text-3xl text-slate-600 mb-2"></i>
-                    <p class="text-sm text-slate-300 font-semibold">You are the only member synced in this room!</p>
-                    <p class="text-xs text-slate-500 mt-1">Tell your friends to join using the exact same Room Name and Password.</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-feed" class="tab-view hidden space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 space-y-6">
-                    <!-- Post Creator -->
-                    <div class="frosted-glass rounded-2xl p-5">
-                        <div class="flex gap-3">
-                            <div id="feedAvatarBox" class="w-10 h-10 rounded-xl bg-slate-800 border border-cyan-500/30 flex items-center justify-center text-sm font-bold text-cyan-300">
-                                ?
-                            </div>
-                            <div class="flex-1 space-y-3">
-                                <textarea id="feedPostInput" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500" placeholder="Post a milestone or workout update to your squad..."></textarea>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex gap-2">
-                                        <button onclick="quickFeedTag('🧊 Cold Shower')" class="text-[10px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg">🧊 Cold Shower</button>
-                                        <button onclick="quickFeedTag('🔥 Workout Done')" class="text-[10px] font-mono bg-slate-800 hover:bg-slate-700 text-slate-300 px-2.5 py-1 rounded-lg">🔥 Workout</button>
-                                    </div>
-                                    <button onclick="createFeedPost()" class="px-4 py-1.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-1.5">
-                                        <i class="fa-solid fa-paper-plane"></i> Post
-                                    </button>
+                    <div className="space-y-3">
+                      {roomMembers.length === 0 ? (
+                        <p className="text-slate-500 text-sm text-center py-6">Waiting for room members to load...</p>
+                      ) : (
+                        [...roomMembers]
+                          .sort((a, b) => (b.todayProgress || 0) - (a.todayProgress || 0))
+                          .map((member, idx) => (
+                            <div
+                              key={member.id || idx}
+                              className={`p-4 rounded-xl border flex items-center justify-between ${
+                                member.id === user.id
+                                  ? 'bg-sky-950/20 border-sky-500/50'
+                                  : 'bg-slate-900/50 border-slate-800'
+                              }`}
+                            >
+                              <div className="flex items-center gap-4">
+                                <span className={`font-black text-lg w-6 ${
+                                  idx === 0 ? 'text-amber-400' : idx === 1 ? 'text-slate-300' : idx === 2 ? 'text-amber-700' : 'text-slate-600'
+                                }`}>
+                                  #{idx + 1}
+                                </span>
+                                <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xl">
+                                  {member.avatar || '⚡'}
                                 </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-sm text-slate-100">
+                                      {member.name || 'Anonymous'}
+                                    </span>
+                                    {member.id === user.id && (
+                                      <span className="text-[10px] bg-sky-950 text-sky-400 px-2 py-0.5 rounded border border-sky-800">
+                                        YOU
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-slate-400">
+                                    Streak: <span className="text-amber-400 font-semibold">{member.streak || 0}d</span>
+                                    {member.currentWeight ? ` • ${member.currentWeight}kg` : ''}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="text-right">
+                                <span className="text-lg font-black text-sky-400">{member.todayProgress || 0}%</span>
+                                <p className="text-xs text-slate-500">
+                                  {member.completedCount || 0}/{member.totalHabits || 0} rules
+                                </p>
+                              </div>
                             </div>
-                        </div>
+                          ))
+                      )}
                     </div>
+                  </div>
 
-                    <!-- Live Room Posts -->
-                    <div class="space-y-4" id="feedPostsContainer">
-                        <!-- Rendered dynamically -->
-                    </div>
-                </div>
-
-                <!-- Feed Sidebar -->
-                <div class="space-y-6">
-                    <div class="frosted-glass rounded-2xl p-5">
-                        <h3 class="font-bold text-slate-100 text-sm mb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-circle-info text-cyan-400"></i> Room Feed Info
-                        </h3>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Posts in this feed are broadcast exclusively to friends connected to room <strong id="feedActiveRoomName" class="text-cyan-300">--</strong>.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div id="view-profile" class="tab-view hidden space-y-6">
-            <div class="frosted-glass rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
-                <div class="border-b border-slate-800 pb-4">
-                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-                        <i class="fa-solid fa-sliders text-cyan-400"></i> Profile & Room Settings
-                    </h2>
-                    <p class="text-xs text-slate-400">Manage your user identity and active private room connection.</p>
-                </div>
-
-                <div class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">Display Name</label>
-                            <input type="text" id="settingName" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">Target Wake Time</label>
-                            <input type="text" id="settingWake" placeholder="e.g. 5:00 AM" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">Starting Weight (kg)</label>
-                            <input type="number" step="0.1" id="settingStartWeight" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-mono text-slate-400 mb-1">Goal Weight (kg)</label>
-                            <input type="number" step="0.1" id="settingGoalWeight" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Winter Arc Manifesto / Main Mindset Goal</label>
-                        <textarea id="settingManifesto" rows="2" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-cyan-500" placeholder="e.g. No alcohol, 5 AM wakeups, 10k steps daily..."></textarea>
-                    </div>
-
-                    <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-mono text-slate-300 font-bold">CURRENT ACTIVE ROOM</span>
-                            <span class="text-xs font-mono text-cyan-400 font-bold" id="settingCurrentRoomNameDisplay">Not Set</span>
-                        </div>
-                        <button onclick="openRoomModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-bold rounded-xl flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-right-to-bracket"></i> Create or Switch Room & Password
-                        </button>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between pt-4 border-t border-slate-800">
-                    <button onclick="resetAllData()" class="px-4 py-2 bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs font-semibold rounded-xl hover:bg-rose-900/40">
-                        Reset All Local Data
-                    </button>
-                    <button onclick="saveProfileSettings()" class="px-5 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-cyan-500/20">
-                        Save Profile
-                    </button>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    
-    <!-- ROOM CREATION / JOIN MODAL -->
-    <div id="roomModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-users-gear text-cyan-400"></i> Join or Create Squad Room
-                </h3>
-                <button onclick="closeRoomModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <p class="text-xs text-slate-400 leading-relaxed">
-                Enter a custom <strong>Room Name</strong> and <strong>Password</strong>. Anyone who enters the exact same Room Name and Password will immediately join your shared real-time leaderboard!
-            </p>
-
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">ROOM NAME</label>
-                    <input type="text" id="modalRoomNameInput" placeholder="e.g. Alpha Squad" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
-                </div>
-                <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">ROOM PASSWORD</label>
-                    <input type="password" id="modalRoomPasswordInput" placeholder="Set room password..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-mono">
-                </div>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeRoomModal()" class="px-4 py-2 text-xs text-slate-400">Cancel</button>
-                <button onclick="joinCustomRoom()" class="px-5 py-2 bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-cyan-400 shadow-md shadow-cyan-500/20">
-                    Connect Room
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ADD CUSTOM HABIT MODAL -->
-    <div id="addHabitModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-plus text-cyan-400"></i> Add Daily Discipline Rule
-                </h3>
-                <button onclick="closeAddHabitModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Rule Name</label>
-                    <input type="text" id="newHabitTitle" placeholder="e.g. Cold Shower 3 Mins or Read 20 Pages" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Category</label>
-                    <select id="newHabitCategory" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                        <option value="discipline">Discipline / Routine</option>
-                        <option value="fitness">Fitness / Physical</option>
-                        <option value="mindset">Mindset / Growth</option>
-                        <option value="health">Nutrition & Health</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeAddHabitModal()" class="px-4 py-2 text-xs text-slate-400">Cancel</button>
-                <button onclick="saveNewHabit()" class="px-5 py-2 bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-cyan-400">Add Rule</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- PROFILE INITIAL SETUP MODAL -->
-    <div id="profileModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <h3 class="text-base font-bold text-slate-100 flex items-center gap-2">
-                    <i class="fa-solid fa-user text-cyan-400"></i> Set Up Profile
-                </h3>
-                <button onclick="closeProfileModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-3">
-                <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Your Display Name</label>
-                    <input type="text" id="modalNameInput" placeholder="Enter name..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Starting Weight (kg)</label>
-                        <input type="number" step="0.1" id="modalStartWeight" placeholder="80" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-mono text-slate-400 mb-1">Goal Weight (kg)</label>
-                        <input type="number" step="0.1" id="modalGoalWeight" placeholder="75" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Target Wake Up Time</label>
-                    <input type="text" id="modalWakeTime" placeholder="e.g. 5:00 AM" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                </div>
-                <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">Winter Arc Manifesto</label>
-                    <input type="text" id="modalManifesto" placeholder="Your main goal or mindset..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
-                </div>
-            </div>
-            <div class="flex justify-end gap-2 pt-2">
-                <button onclick="closeProfileModal()" class="px-4 py-2 text-xs text-slate-400">Cancel</button>
-                <button onclick="saveQuickProfile()" class="px-5 py-2 bg-cyan-500 text-slate-950 font-bold text-xs rounded-xl hover:bg-cyan-400">Save Profile</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notifications -->
-    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
-
-    <script>
-        // CLEAN ZERO STATE DEFAULT
-        const CLEAN_APP_STATE = {
-            room: {
-                name: '',
-                password: '',
-                token: ''
-            },
-            profile: {
-                id: 'u_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36),
-                name: '',
-                wakeTime: '',
-                startWeight: null,
-                currentWeight: null,
-                goalWeight: null,
-                manifesto: ''
-            },
-            habits: [],
-            history: {}, // Key: YYYY-MM-DD -> { completedHabitIds: [], journal: "", weight: null }
-            feed: [],
-            squadMembers: []
-        };
-
-        const TEMPLATE_HABITS = [
-            { id: "tmpl_1", title: "5:00 AM Wakeup", category: "discipline" },
-            { id: "tmpl_2", title: "10,000 Daily Steps", category: "fitness" },
-            { id: "tmpl_3", title: "1 Hour Gym / Workout", category: "fitness" },
-            { id: "tmpl_4", title: "Read 20 Pages Non-Fiction", category: "mindset" },
-            { id: "tmpl_5", title: "3-Minute Cold Shower", category: "discipline" },
-            { id: "tmpl_6", title: "Zero Alcohol / Zero Sugar", category: "health" }
-        ];
-
-        let state = JSON.parse(localStorage.getItem('WINTER_ARC_V3_STATE')) || CLEAN_APP_STATE;
-        let syncTimer = null;
-
-        // Deterministic SHA-256 Room Hash Token Generator
-        async function generateRoomToken(name, pass) {
-            if (!name || !pass) return '';
-            const raw = `${name.trim().toLowerCase()}:::${pass.trim()}`;
-            const msgBuffer = new TextEncoder().encode(raw);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 24);
-        }
-
-        function getTodayStr() {
-            const today = new Date();
-            const y = today.getFullYear();
-            const m = String(today.getMonth() + 1).padStart(2, '0');
-            const d = String(today.getDate()).padStart(2, '0');
-            return `${y}-${m}-${d}`;
-        }
-
-        function saveLocalState() {
-            localStorage.setItem('WINTER_ARC_V3_STATE', JSON.stringify(state));
-            syncWithRoomBackend();
-        }
-
-        // Real-Time Cross-Device Sync Backend API Engine
-        async function syncWithRoomBackend() {
-            if (!state.room.token || !state.profile.name) {
-                updateSyncUI(false, "No Room Joined");
-                return;
-            }
-
-            const icon = document.getElementById('syncIcon');
-            if (icon) icon.classList.add('fa-spin');
-
-            const metrics = calculateMetrics();
-            const todayStr = getTodayStr();
-
-            const myPayload = {
-                id: state.profile.id,
-                name: state.profile.name,
-                avatar: state.profile.name.charAt(0).toUpperCase(),
-                wakeTime: state.profile.wakeTime,
-                currentWeight: state.profile.currentWeight,
-                goalWeight: state.profile.goalWeight,
-                manifesto: state.profile.manifesto,
-                todayProgress: metrics.todayPercent,
-                completedHabitsCount: metrics.todayCompleted,
-                totalHabitsCount: metrics.totalHabits,
-                streak: metrics.streak,
-                consistency: metrics.consistency,
-                lastUpdated: Date.now()
-            };
-
-            const endpoint = `https://keyvalue.immanuel.co/api/KeyVal/`;
-
-            try {
-                // 1. Fetch current room state
-                const getRes = await fetch(`${endpoint}GetValue/${state.room.token}`);
-                let roomData = { members: {}, feed: [] };
-
-                if (getRes.ok) {
-                    const rawText = await getRes.text();
-                    try {
-                        if (rawText && rawText !== 'null') {
-                            roomData = JSON.parse(JSON.parse(rawText)); // Unescape JSON
-                        }
-                    } catch (e) {
-                        try { roomData = JSON.parse(rawText); } catch(err){}
-                    }
-                }
-
-                if (!roomData.members) roomData.members = {};
-                if (!roomData.feed) roomData.feed = [];
-
-                // 2. Upsert current user profile
-                roomData.members[state.profile.id] = myPayload;
-
-                // 3. Merge feed posts
-                if (state.feed.length > 0) {
-                    const existingFeedTexts = new Set(roomData.feed.map(f => `${f.author}_${f.time}_${f.text}`));
-                    state.feed.forEach(post => {
-                        const key = `${post.author}_${post.time}_${post.text}`;
-                        if (!existingFeedTexts.has(key)) {
-                            roomData.feed.unshift(post);
-                        }
-                    });
-                }
-
-                // Keep only recent 30 posts
-                roomData.feed = roomData.feed.slice(0, 30);
-
-                // 4. Push updated room data back
-                await fetch(`${endpoint}ActVal/${state.room.token}/${encodeURIComponent(JSON.stringify(roomData))}`);
-
-                // 5. Convert members map to list
-                const now = Date.now();
-                const membersList = Object.values(roomData.members).filter(m => {
-                    // Filter out members inactive for > 14 days
-                    return (now - (m.lastUpdated || 0)) < (14 * 24 * 60 * 60 * 1000);
-                });
-
-                state.squadMembers = membersList;
-                state.feed = roomData.feed;
-
-                updateSyncUI(true, `Synced (${membersList.length} Online)`);
-                renderSquadView();
-                renderFeedView();
-            } catch (err) {
-                console.error("Room sync failed:", err);
-                updateSyncUI(false, "Sync Error");
-            } finally {
-                if (icon) icon.classList.remove('fa-spin');
-            }
-        }
-
-        function updateSyncUI(online, text) {
-            const badge = document.getElementById('syncStatusBadge');
-            const dot = document.getElementById('syncDot');
-            const txt = document.getElementById('syncText');
-
-            if (badge) badge.classList.remove('hidden');
-            if (dot) {
-                dot.className = online ? 'w-2 h-2 rounded-full bg-emerald-400 pulse-live' : 'w-2 h-2 rounded-full bg-rose-500';
-            }
-            if (txt) {
-                txt.innerText = text;
-                txt.className = online ? 'text-emerald-400 font-bold' : 'text-slate-400';
-            }
-        }
-
-        function forceSyncNow() {
-            syncWithRoomBackend();
-            showToast("Syncing room data...");
-        }
-
-        function calculateMetrics() {
-            const todayStr = getTodayStr();
-            const todayHistory = state.history[todayStr] || { completedHabitIds: [] };
-            const totalHabits = state.habits.length;
-            
-            const todayCompleted = todayHistory.completedHabitIds.length;
-            const todayPercent = totalHabits === 0 ? 0 : Math.round((todayCompleted / totalHabits) * 100);
-
-            let streak = 0;
-            let checkDate = new Date();
-            
-            if (todayPercent === 100) {
-                streak++;
-                checkDate.setDate(checkDate.getDate() - 1);
-            } else {
-                checkDate.setDate(checkDate.getDate() - 1);
-            }
-
-            while (true) {
-                const y = checkDate.getFullYear();
-                const m = String(checkDate.getMonth() + 1).padStart(2, '0');
-                const d = String(checkDate.getDate()).padStart(2, '0');
-                const dateKey = `${y}-${m}-${d}`;
-
-                const dayData = state.history[dateKey];
-                if (dayData && totalHabits > 0 && dayData.completedHabitIds.length === totalHabits) {
-                    streak++;
-                    checkDate.setDate(checkDate.getDate() - 1);
-                } else {
-                    break;
-                }
-            }
-
-            const trackedDays = Object.keys(state.history).length;
-            let totalPctSum = 0;
-
-            Object.values(state.history).forEach(day => {
-                if (totalHabits > 0) {
-                    totalPctSum += (day.completedHabitIds.length / totalHabits);
-                }
-            });
-
-            const consistency = trackedDays === 0 ? 0 : parseFloat(((totalPctSum / trackedDays) * 100).toFixed(1));
-
-            return { todayPercent, streak, consistency, todayCompleted, totalHabits };
-        }
-
-        function renderAll() {
-            const todayStr = getTodayStr();
-            document.getElementById('todayDateStr').innerText = todayStr;
-            
-            const roomDisplayName = state.room.name ? state.room.name : 'Not Set';
-            document.getElementById('headerRoomName').innerText = roomDisplayName;
-            document.getElementById('squadCurrentRoomName').innerText = roomDisplayName;
-            document.getElementById('feedActiveRoomName').innerText = roomDisplayName;
-            document.getElementById('settingCurrentRoomNameDisplay').innerText = roomDisplayName;
-
-            const name = state.profile.name || "Set Up Profile";
-            const initial = name.charAt(0).toUpperCase() || "?";
-
-            document.getElementById('bannerAvatarBox').innerText = initial;
-            document.getElementById('headerAvatarBox').innerText = initial;
-            document.getElementById('feedAvatarBox').innerText = initial;
-
-            document.getElementById('bannerUserName').innerText = name;
-            document.getElementById('bannerManifesto').innerText = state.profile.manifesto ? `"${state.profile.manifesto}"` : "No manifesto set yet.";
-            document.getElementById('bannerWakeTime').innerText = state.profile.wakeTime || "--:--";
-            document.getElementById('bannerCurrentWeight').innerText = state.profile.currentWeight ? `${state.profile.currentWeight} kg` : "-- kg";
-            document.getElementById('bannerTargetWeight').innerText = state.profile.goalWeight ? `${state.profile.goalWeight} kg` : "-- kg";
-
-            if (state.profile.startWeight && state.profile.currentWeight) {
-                const diff = (state.profile.currentWeight - state.profile.startWeight).toFixed(1);
-                document.getElementById('statWeightDiff').innerText = `${diff > 0 ? '+' : ''}${diff} kg`;
-            } else {
-                document.getElementById('statWeightDiff').innerText = `0.0 kg`;
-            }
-
-            const metrics = calculateMetrics();
-            document.getElementById('statStreak').innerText = `${metrics.streak} Days`;
-            document.getElementById('statTodayScore').innerText = `${metrics.todayPercent}%`;
-            document.getElementById('statConsistency').innerText = `${metrics.consistency}%`;
-
-            renderDailyChecklist(todayStr);
-            renderHeatmap();
-            renderSquadView();
-            renderFeedView();
-            renderSettingsFields();
-        }
-
-        function renderDailyChecklist(todayStr) {
-            const container = document.getElementById('dailyHabitsContainer');
-            const todayData = state.history[todayStr] || { completedHabitIds: [], journal: '', weight: '' };
-
-            if (state.habits.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-8 bg-slate-950/40 rounded-xl border border-slate-800/80">
-                        <i class="fa-solid fa-square-check text-3xl text-slate-600 mb-2"></i>
-                        <p class="text-xs text-slate-400">Your Winter Arc rule list is empty.</p>
-                        <p class="text-[11px] text-slate-500 mt-1">Add custom rules or quick-add a preset template below!</p>
-                    </div>
-                `;
-                document.getElementById('templateSection').classList.remove('hidden');
-
-                const tmplContainer = document.getElementById('templateButtons');
-                tmplContainer.innerHTML = TEMPLATE_HABITS.map(t => `
-                    <button onclick="addTemplateHabit('${t.id}')" class="px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-cyan-500/50 text-xs text-slate-300 rounded-xl flex items-center gap-1.5 transition-colors">
-                        <i class="fa-solid fa-plus text-cyan-400"></i> ${t.title}
-                    </button>
-                `).join('');
-                return;
-            }
-
-            document.getElementById('templateSection').classList.add('hidden');
-
-            container.innerHTML = state.habits.map(h => {
-                const isDone = todayData.completedHabitIds.includes(h.id);
-                return `
-                    <div onclick="toggleHabit('${h.id}')" class="flex items-center justify-between p-4 rounded-xl border ${isDone ? 'bg-cyan-950/20 border-cyan-500/40' : 'bg-slate-900 border-slate-800'} cursor-pointer hover:border-cyan-500/50 transition-all">
-                        <div class="flex items-center gap-3">
-                            <div class="w-6 h-6 rounded-lg border ${isDone ? 'bg-cyan-400 border-cyan-400 text-slate-950' : 'border-slate-600'} flex items-center justify-center font-black">
-                                ${isDone ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                  {/* GLORY & SHAME ACCOUNTABILITY BOARD */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="bg-emerald-950/20 border border-emerald-800/40 p-5 rounded-2xl">
+                      <h3 className="text-emerald-400 font-bold text-sm mb-3 flex items-center gap-2">
+                        <span>👑</span> Glory Board (100% Completed)
+                      </h3>
+                      <div className="space-y-2">
+                        {roomMembers.filter(m => m.todayProgress === 100).length === 0 ? (
+                          <p className="text-xs text-slate-500 italic">No one hit 100% today yet.</p>
+                        ) : (
+                          roomMembers.filter(m => m.todayProgress === 100).map(m => (
+                            <div key={m.id} className="text-xs font-semibold text-emerald-200 bg-emerald-900/30 px-3 py-2 rounded-lg">
+                              {m.avatar} {m.name} — Locked In!
                             </div>
-                            <div>
-                                <span class="text-sm font-semibold ${isDone ? 'line-through text-slate-400' : 'text-slate-100'}">${h.title}</span>
-                                <span class="text-[10px] font-mono text-cyan-400/80 block uppercase">${h.category}</span>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-rose-950/20 border border-rose-800/40 p-5 rounded-2xl">
+                      <h3 className="text-rose-400 font-bold text-sm mb-3 flex items-center gap-2">
+                        <span>⚠️</span> Accountability Zone (&lt;50% Completed)
+                      </h3>
+                      <div className="space-y-2">
+                        {roomMembers.filter(m => (m.todayProgress || 0) < 50).length === 0 ? (
+                          <p className="text-xs text-slate-500 italic">Everyone is on track!</p>
+                        ) : (
+                          roomMembers.filter(m => (m.todayProgress || 0) < 50).map(m => (
+                            <div key={m.id} className="text-xs font-semibold text-rose-300 bg-rose-900/30 px-3 py-2 rounded-lg">
+                              {m.avatar} {m.name} — Currently at {m.todayProgress || 0}%
                             </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: ACTIVITY FEED */}
+          {activeTab === 'feed' && (
+            <div className="space-y-6">
+              {!room.joined ? (
+                <div className="p-8 text-center bg-arc-card rounded-2xl border border-arc-border">
+                  <p className="text-slate-400 mb-4">Join a squad room to interact in the live activity feed.</p>
+                </div>
+              ) : (
+                <div className="bg-arc-card p-6 rounded-2xl border border-arc-border">
+                  <h2 className="text-lg font-bold text-slate-100 mb-4">Squad Activity Feed</h2>
+
+                  {/* Post Box */}
+                  <form onSubmit={handlePostActivity} className="mb-6 space-y-3">
+                    <textarea
+                      rows="2"
+                      placeholder="Post a update (e.g. Just finished 5 AM run in the cold)..."
+                      value={newPostText}
+                      onChange={(e) => setNewPostText(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-sky-500 custom-scrollbar resize-none"
+                    ></textarea>
+                    <div className="flex justify-end">
+                      <button
+                        type="submit"
+                        className="px-5 py-2 bg-sky-500 hover:bg-sky-400 text-white font-bold text-xs rounded-xl shadow"
+                      >
+                        Broadcast Update
+                      </button>
+                    </div>
+                  </form>
+
+                  {/* Feed Items */}
+                  <div className="space-y-4">
+                    {activityFeed.length === 0 ? (
+                      <p className="text-slate-500 text-sm text-center py-6">No updates posted yet. Be the first!</p>
+                    ) : (
+                      activityFeed.map((post) => (
+                        <div key={post.id} className="p-4 rounded-xl bg-slate-900/60 border border-slate-800/80">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{post.userAvatar || '⚡'}</span>
+                              <span className="font-bold text-sm text-slate-200">{post.userName}</span>
+                            </div>
+                            <span className="text-[10px] text-slate-500">
+                              {new Date(post.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-300">{post.content}</p>
                         </div>
-                        <button onclick="event.stopPropagation(); deleteHabit('${h.id}')" class="text-slate-600 hover:text-rose-400 p-1">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
-                    </div>
-                `;
-            }).join('');
-
-            document.getElementById('dailyJournalInput').value = todayData.journal || '';
-            document.getElementById('dailyWeightInput').value = todayData.weight || '';
-        }
-
-        function renderHeatmap() {
-            const grid = document.getElementById('arcHeatmapGrid');
-            grid.innerHTML = '';
-
-            const startDate = new Date(2026, 9, 1); // Oct 1
-            const totalHabits = state.habits.length;
-
-            for (let i = 0; i < 92; i++) {
-                const curr = new Date(startDate);
-                curr.setDate(startDate.getDate() + i);
-
-                const y = curr.getFullYear();
-                const m = String(curr.getMonth() + 1).padStart(2, '0');
-                const d = String(curr.getDate()).padStart(2, '0');
-                const dateStr = `${y}-${m}-${d}`;
-
-                const dayData = state.history[dateStr];
-                let bgClass = "bg-slate-900 border-slate-800/80";
-
-                if (dayData && totalHabits > 0) {
-                    const pct = dayData.completedHabitIds.length / totalHabits;
-                    if (pct === 1) bgClass = "bg-cyan-400 border-cyan-300";
-                    else if (pct >= 0.5) bgClass = "bg-cyan-600 border-cyan-500";
-                    else if (pct > 0) bgClass = "bg-cyan-950 border-cyan-800";
-                }
-
-                grid.innerHTML += `<div title="${dateStr}" class="w-full aspect-square rounded ${bgClass} border"></div>`;
-            }
-        }
-
-        function renderSquadView() {
-            const gloryList = document.getElementById('squadGloryList');
-            const slackerList = document.getElementById('squadSlackerList');
-            const tableBody = document.getElementById('squadLeaderboardBody');
-            const emptyNotice = document.getElementById('emptySquadNotice');
-
-            const metrics = calculateMetrics();
-            const selfEntry = {
-                id: state.profile.id,
-                name: state.profile.name || "You",
-                todayProgress: metrics.todayPercent,
-                streak: metrics.streak,
-                consistency: metrics.consistency,
-                goalWeight: state.profile.goalWeight,
-                lastUpdated: Date.now()
-            };
-
-            // Merge local self entry with squad list
-            const membersMap = {};
-            state.squadMembers.forEach(m => { membersMap[m.id] = m; });
-            membersMap[state.profile.id] = selfEntry;
-
-            const members = Object.values(membersMap);
-            document.getElementById('squadBadgeCount').innerText = members.length;
-
-            if (members.length <= 1) {
-                emptyNotice.classList.remove('hidden');
-            } else {
-                emptyNotice.classList.add('hidden');
-            }
-
-            const glory = members.filter(m => m.todayProgress === 100);
-            const slackers = members.filter(m => m.todayProgress < 50);
-
-            document.getElementById('gloryCount').innerText = `${glory.length} Members`;
-            document.getElementById('slackerCount').innerText = `${slackers.length} Members`;
-
-            gloryList.innerHTML = glory.length ? glory.map(m => `
-                <div class="flex items-center justify-between bg-emerald-950/30 p-2 rounded-xl border border-emerald-500/20 text-xs">
-                    <span class="font-bold text-slate-200">${m.name || "Anonymous"}</span>
-                    <span class="font-mono text-emerald-400 font-bold">100% Locked In</span>
+                      ))
+                    )}
+                  </div>
                 </div>
-            `).join('') : `<p class="text-xs text-slate-500 italic">No members at 100% today yet.</p>`;
+              )}
+            </div>
+          )}
 
-            slackerList.innerHTML = slackers.length ? slackers.map(m => `
-                <div class="flex items-center justify-between bg-rose-950/30 p-2 rounded-xl border border-rose-500/20 text-xs">
-                    <span class="font-bold text-slate-200">${m.name || "Anonymous"}</span>
-                    <span class="font-mono text-rose-400 font-bold">${m.todayProgress || 0}% Completed</span>
+          {/* TAB 4: PROFILE SETTINGS */}
+          {activeTab === 'profile' && (
+            <div className="bg-arc-card p-6 rounded-2xl border border-arc-border max-w-xl mx-auto space-y-4">
+              <h2 className="text-lg font-bold text-slate-100 mb-4">Customize Profile</h2>
+
+              <div>
+                <label htmlFor="user_name_input" className="block text-xs font-medium text-slate-300 mb-1">
+                  Your Name
+                </label>
+                <input
+                  id="user_name_input"
+                  type="text"
+                  value={user.name}
+                  onChange={(e) => setUser({ ...user, name: e.target.value })}
+                  placeholder="e.g. Alex"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="user_avatar_input" className="block text-xs font-medium text-slate-300 mb-1">
+                  Avatar Emoji
+                </label>
+                <input
+                  id="user_avatar_input"
+                  type="text"
+                  value={user.avatar}
+                  onChange={(e) => setUser({ ...user, avatar: e.target.value })}
+                  placeholder="e.g. ⚡"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label htmlFor="user_weight_input" className="block text-xs font-medium text-slate-300 mb-1">
+                    Current Weight (kg)
+                  </label>
+                  <input
+                    id="user_weight_input"
+                    type="number"
+                    value={user.currentWeight}
+                    onChange={(e) => setUser({ ...user, currentWeight: e.target.value })}
+                    placeholder="e.g. 75"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                  />
                 </div>
-            `).join('') : `<p class="text-xs text-slate-500 italic">No slackers recorded today.</p>`;
 
-            const sorted = [...members].sort((a,b) => (b.consistency || 0) - (a.consistency || 0));
-            tableBody.innerHTML = sorted.map((m, idx) => {
-                const isMe = m.id === state.profile.id;
-                const lastSyncMin = m.lastUpdated ? Math.floor((Date.now() - m.lastUpdated) / 60000) : 0;
-                const syncStr = lastSyncMin <= 1 ? 'Just now' : `${lastSyncMin}m ago`;
-
-                return `
-                    <tr class="${isMe ? 'bg-cyan-950/30 font-bold border-l-2 border-l-cyan-400' : ''}">
-                        <td class="p-3 font-mono font-bold ${idx === 0 ? 'text-amber-400' : 'text-slate-500'}">#${idx + 1}</td>
-                        <td class="p-3 font-bold text-slate-200 flex items-center gap-2">
-                            <span>${m.name || "Anonymous"}</span>
-                            ${isMe ? '<span class="text-[9px] font-mono bg-cyan-500 text-slate-950 px-1.5 py-0.2 rounded font-black">YOU</span>' : ''}
-                        </td>
-                        <td class="p-3 text-center font-mono text-amber-400">${m.streak || 0}d</td>
-                        <td class="p-3 text-center font-mono text-sky-400">${m.todayProgress || 0}%</td>
-                        <td class="p-3 text-center font-mono text-cyan-400 font-bold">${m.consistency || 0}%</td>
-                        <td class="p-3 text-center font-mono text-slate-400">${m.goalWeight ? `${m.goalWeight} kg` : '--'}</td>
-                        <td class="p-3 text-right font-mono text-[10px] text-slate-500">${syncStr}</td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function renderFeedView() {
-            const container = document.getElementById('feedPostsContainer');
-            if (!state.feed || state.feed.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-8 frosted-glass rounded-2xl">
-                        <i class="fa-solid fa-bolt text-3xl text-slate-600 mb-2"></i>
-                        <p class="text-xs text-slate-400">No feed logs posted yet in this room.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = state.feed.map(post => `
-                <div class="frosted-glass rounded-2xl p-4 space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold text-slate-200">${post.author}</span>
-                        <span class="text-[10px] font-mono text-slate-500">${post.time}</span>
-                    </div>
-                    <p class="text-xs text-slate-300 leading-relaxed">${post.text}</p>
+                <div>
+                  <label htmlFor="user_goal_weight_input" className="block text-xs font-medium text-slate-300 mb-1">
+                    Goal Weight (kg)
+                  </label>
+                  <input
+                    id="user_goal_weight_input"
+                    type="number"
+                    value={user.goalWeight}
+                    onChange={(e) => setUser({ ...user, goalWeight: e.target.value })}
+                    placeholder="e.g. 70"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500"
+                  />
                 </div>
-            `).join('');
-        }
+              </div>
 
-        function renderSettingsFields() {
-            document.getElementById('settingName').value = state.profile.name || '';
-            document.getElementById('settingWake').value = state.profile.wakeTime || '';
-            document.getElementById('settingStartWeight').value = state.profile.startWeight || '';
-            document.getElementById('settingGoalWeight').value = state.profile.goalWeight || '';
-            document.getElementById('settingManifesto').value = state.profile.manifesto || '';
-        }
+              <div>
+                <label htmlFor="user_manifesto_input" className="block text-xs font-medium text-slate-300 mb-1">
+                  Winter Arc Manifesto / Main Goal
+                </label>
+                <textarea
+                  id="user_manifesto_input"
+                  rows="3"
+                  value={user.manifesto}
+                  onChange={(e) => setUser({ ...user, manifesto: e.target.value })}
+                  placeholder="Why are you taking on the Winter Arc?"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-sky-500 custom-scrollbar resize-none"
+                ></textarea>
+              </div>
 
-        // ROOM & DISCIPLINE ACTIONS
-        async function joinCustomRoom() {
-            const name = document.getElementById('modalRoomNameInput').value.trim();
-            const pass = document.getElementById('modalRoomPasswordInput').value.trim();
+              <p className="text-xs text-emerald-400 font-medium pt-2">
+                ✓ Profile changes save automatically and sync to your room.
+              </p>
+            </div>
+          )}
 
-            if (!name || !pass) {
-                showToast("Please enter both Room Name and Password.");
-                return;
-            }
+        </div>
+      );
+    }
 
-            const token = await generateRoomToken(name, pass);
-            state.room.name = name;
-            state.room.password = pass;
-            state.room.token = token;
-
-            saveLocalState();
-            closeRoomModal();
-
-            renderAll();
-            showToast(`Connecting to room: "${name}"...`);
-            syncWithRoomBackend();
-        }
-
-        function toggleHabit(habitId) {
-            const todayStr = getTodayStr();
-            if (!state.history[todayStr]) {
-                state.history[todayStr] = { completedHabitIds: [], journal: '', weight: '' };
-            }
-
-            const completed = state.history[todayStr].completedHabitIds;
-            const idx = completed.indexOf(habitId);
-            if (idx > -1) {
-                completed.splice(idx, 1);
-            } else {
-                completed.push(habitId);
-            }
-
-            saveLocalState();
-            renderAll();
-
-            if (completed.length === state.habits.length && state.habits.length > 0) {
-                confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-                showToast("⚡ 100% DISCIPLINE ACHIEVED TODAY!");
-            }
-        }
-
-        function addTemplateHabit(templateId) {
-            const tmpl = TEMPLATE_HABITS.find(t => t.id === templateId);
-            if (!tmpl) return;
-
-            state.habits.push({
-                id: 'h_' + Date.now(),
-                title: tmpl.title,
-                category: tmpl.category
-            });
-
-            saveLocalState();
-            renderAll();
-            showToast(`Added: ${tmpl.title}`);
-        }
-
-        function deleteHabit(id) {
-            state.habits = state.habits.filter(h => h.id !== id);
-            saveLocalState();
-            renderAll();
-            showToast("Rule removed.");
-        }
-
-        function saveDailyNote() {
-            const todayStr = getTodayStr();
-            if (!state.history[todayStr]) {
-                state.history[todayStr] = { completedHabitIds: [], journal: '', weight: '' };
-            }
-
-            state.history[todayStr].journal = document.getElementById('dailyJournalInput').value;
-            const weightVal = parseFloat(document.getElementById('dailyWeightInput').value);
-            if (weightVal) {
-                state.history[todayStr].weight = weightVal;
-                state.profile.currentWeight = weightVal;
-            }
-
-            saveLocalState();
-            renderAll();
-            showToast("Daily log saved!");
-        }
-
-        function saveQuickProfile() {
-            state.profile.name = document.getElementById('modalNameInput').value.trim();
-            state.profile.startWeight = parseFloat(document.getElementById('modalStartWeight').value) || null;
-            state.profile.currentWeight = state.profile.startWeight;
-            state.profile.goalWeight = parseFloat(document.getElementById('modalGoalWeight').value) || null;
-            state.profile.wakeTime = document.getElementById('modalWakeTime').value.trim();
-            state.profile.manifesto = document.getElementById('modalManifesto').value.trim();
-
-            closeProfileModal();
-            saveLocalState();
-            renderAll();
-            showToast("Profile set up!");
-
-            if (!state.room.token) {
-                openRoomModal();
-            }
-        }
-
-        function saveProfileSettings() {
-            state.profile.name = document.getElementById('settingName').value.trim();
-            state.profile.wakeTime = document.getElementById('settingWake').value.trim();
-            state.profile.startWeight = parseFloat(document.getElementById('settingStartWeight').value) || null;
-            state.profile.goalWeight = parseFloat(document.getElementById('settingGoalWeight').value) || null;
-            state.profile.manifesto = document.getElementById('settingManifesto').value.trim();
-
-            saveLocalState();
-            renderAll();
-            showToast("Profile settings saved!");
-        }
-
-        function createFeedPost() {
-            const input = document.getElementById('feedPostInput');
-            const txt = input.value.trim();
-            if (!txt) return;
-
-            const newPost = {
-                author: state.profile.name || "Anonymous",
-                time: "Just now",
-                text: txt
-            };
-
-            state.feed.unshift(newPost);
-            input.value = '';
-            saveLocalState();
-            renderAll();
-            showToast("Posted to squad feed!");
-        }
-
-        function quickFeedTag(tag) {
-            const input = document.getElementById('feedPostInput');
-            input.value = `${tag}: ${input.value}`;
-        }
-
-        function saveNewHabit() {
-            const title = document.getElementById('newHabitTitle').value.trim();
-            const category = document.getElementById('newHabitCategory').value;
-            if (!title) return;
-
-            state.habits.push({
-                id: 'h_' + Date.now(),
-                title: title,
-                category: category
-            });
-
-            document.getElementById('newHabitTitle').value = '';
-            closeAddHabitModal();
-            saveLocalState();
-            renderAll();
-            showToast("New rule added!");
-        }
-
-        function resetAllData() {
-            if (confirm("Reset all streak, habits, and profile data to clean state?")) {
-                localStorage.removeItem('WINTER_ARC_V3_STATE');
-                state = JSON.parse(JSON.stringify(CLEAN_APP_STATE));
-                renderAll();
-                showToast("All local data reset.");
-            }
-        }
-
-        // TABS & MODALS
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-tab').forEach(el => {
-                el.classList.remove('bg-cyan-500/10', 'text-cyan-300', 'border', 'border-cyan-500/30');
-                el.classList.add('text-slate-400');
-            });
-
-            document.getElementById(`view-${tabId}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`tab-${tabId}`);
-            activeBtn.classList.add('bg-cyan-500/10', 'text-cyan-300', 'border', 'border-cyan-500/30');
-            activeBtn.classList.remove('text-slate-400');
-        }
-
-        function openAddHabitModal() { document.getElementById('addHabitModal').classList.remove('hidden'); }
-        function closeAddHabitModal() { document.getElementById('addHabitModal').classList.add('hidden'); }
-        function openRoomModal() { 
-            if (state.room.name) document.getElementById('modalRoomNameInput').value = state.room.name;
-            document.getElementById('roomModal').classList.remove('hidden'); 
-        }
-        function closeRoomModal() { document.getElementById('roomModal').classList.add('hidden'); }
-        function openProfileModal() { document.getElementById('profileModal').classList.remove('hidden'); }
-        function closeProfileModal() { document.getElementById('profileModal').classList.add('hidden'); }
-
-        function showToast(msg) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = 'bg-slate-900 border border-cyan-500/40 text-cyan-300 px-4 py-2.5 rounded-xl text-xs font-mono shadow-2xl flex items-center gap-2 pointer-events-auto';
-            toast.innerHTML = `<i class="fa-solid fa-circle-info text-cyan-400"></i> ${msg}`;
-            container.appendChild(toast);
-
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        // INITIALIZATION & 3-SECOND AUTO POLLING
-        window.onload = function() {
-            renderAll();
-
-            if (!state.profile.name) {
-                openProfileModal();
-            } else if (!state.room.token) {
-                openRoomModal();
-            } else {
-                syncWithRoomBackend();
-            }
-
-            // Continuous 3-second polling interval for real-time live updates across friends
-            syncTimer = setInterval(() => {
-                if (state.room.token && state.profile.name) {
-                    syncWithRoomBackend();
-                }
-            }, 3000);
-        };
-    </script>
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
